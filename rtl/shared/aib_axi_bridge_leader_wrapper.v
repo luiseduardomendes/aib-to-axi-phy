@@ -25,7 +25,9 @@ module top_aib_axi_bridge_master_wrapper #(
     parameter AXI_CHNL_NUM      = 1,
     parameter ADDRWIDTH         = 32,
     parameter IDWIDTH           = 4,  // Parameter for AXI ID Width
-    parameter GEN2_MODE         = 1'b1
+    parameter GEN2_MODE         = 1'b1,
+    parameter AVMM_WIDTH        = 32, 
+    parameter BYTE_WIDTH        = 4 
 ) (
     // ======= EMIB interface =======
     inout vddc1,
@@ -77,12 +79,12 @@ module top_aib_axi_bridge_master_wrapper #(
     input i_cfg_avmm_clk,
     input i_cfg_avmm_rst_n,
     input [16:0] i_cfg_avmm_addr,
-    input [3:0] i_cfg_avmm_byte_en,
+    input [BYTE_WIDTH-1:0] i_cfg_avmm_byte_en,
     input i_cfg_avmm_read,
     input i_cfg_avmm_write,
-    input [31:0] i_cfg_avmm_wdata,
+    input [AVMM_WIDTH-1:0] i_cfg_avmm_wdata,
     output o_cfg_avmm_rdatavld,
-    output [31:0] o_cfg_avmm_rdata,
+    output [AVMM_WIDTH-1:0] o_cfg_avmm_rdata,
     output o_cfg_avmm_waitreq,
 
     // ====== MAC <=> AXI-MM =======
@@ -149,7 +151,9 @@ module top_aib_axi_bridge_master_wrapper #(
         .DWIDTH(DWIDTH),
         .AXI_CHNL_NUM(AXI_CHNL_NUM),
         .ADDRWIDTH(ADDRWIDTH),
-        .GEN2_MODE(GEN2_MODE)
+        .GEN2_MODE(GEN2_MODE),
+        .AVMM_WIDTH(AVMM_WIDTH),
+        .BYTE_WIDTH(BYTE_WIDTH)
     )
     u_top_aib_axi_bridge_master (
         .vddc1(vddc1),

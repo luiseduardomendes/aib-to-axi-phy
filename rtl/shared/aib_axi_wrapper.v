@@ -24,7 +24,10 @@ module aib_axi_top_wrapper #(
     parameter AXI_CHNL_NUM      = 1,
     parameter ADDRWIDTH         = 32,
     parameter IDWIDTH           = 4,
-    parameter GEN2_MODE         = 1'b1
+    parameter GEN2_MODE         = 1'b1,
+    parameter AVMM_WIDTH        = 32,
+    parameter BYTE_WIDTH        = 4
+    
 ) (
     // ========================================================================
     // Leader (Master Bridge) Interface
@@ -46,12 +49,12 @@ module aib_axi_top_wrapper #(
     input leader_i_cfg_avmm_clk,
     input leader_i_cfg_avmm_rst_n,
     input [16:0] leader_i_cfg_avmm_addr,
-    input [3:0] leader_i_cfg_avmm_byte_en,
+    input [BYTE_WIDTH-1:0] leader_i_cfg_avmm_byte_en,
     input leader_i_cfg_avmm_read,
     input leader_i_cfg_avmm_write,
-    input [31:0] leader_i_cfg_avmm_wdata,
+    input [AVMM_WIDTH-1:0] leader_i_cfg_avmm_wdata,
     output leader_o_cfg_avmm_rdatavld,
-    output [31:0] leader_o_cfg_avmm_rdata,
+    output [AVMM_WIDTH-1:0] leader_o_cfg_avmm_rdata,
     output leader_o_cfg_avmm_waitreq,
     input leader_clk_wr,
     input leader_rst_wr_n,
@@ -123,12 +126,12 @@ module aib_axi_top_wrapper #(
     input  follower_i_cfg_avmm_clk,
     input  follower_i_cfg_avmm_rst_n,
     input  [16:0] follower_i_cfg_avmm_addr,
-    input  [3:0]  follower_i_cfg_avmm_byte_en,
+    input  [BYTE_WIDTH-1:0]  follower_i_cfg_avmm_byte_en,
     input         follower_i_cfg_avmm_read,
     input         follower_i_cfg_avmm_write,
-    input  [31:0] follower_i_cfg_avmm_wdata,
+    input  [AVMM_WIDTH-1:0] follower_i_cfg_avmm_wdata,
     output        follower_o_cfg_avmm_rdatavld,
-    output [31:0] follower_o_cfg_avmm_rdata,
+    output [AVMM_WIDTH-1:0] follower_o_cfg_avmm_rdata,
     output        follower_o_cfg_avmm_waitreq,
     output [IDWIDTH-1:0]     m_axi_awid,
     output [ADDRWIDTH-1:0]   m_axi_awaddr,
@@ -178,7 +181,9 @@ module aib_axi_top_wrapper #(
         .AXI_CHNL_NUM    (AXI_CHNL_NUM),
         .ADDRWIDTH       (ADDRWIDTH),
         .IDWIDTH         (IDWIDTH),
-        .GEN2_MODE       (GEN2_MODE)
+        .GEN2_MODE       (GEN2_MODE),
+        .AVMM_WIDTH      (AVMM_WIDTH),
+        .BYTE_WIDTH      (BYTE_WIDTH)
     )
     u_aib_axi_top (
         // --- Leader Interface Connections ---

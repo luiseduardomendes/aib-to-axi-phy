@@ -22,6 +22,9 @@ module tb_aib_axi_top_modif();
   parameter ADDRWIDTH         = 32;
   parameter IDWIDTH           = 4;
 
+  parameter AVMM_WIDTH        = 32;
+  parameter BYTE_WIDTH        = 4;
+
   // ========================================================================
   // Testbench Signals
   // ========================================================================
@@ -106,12 +109,12 @@ module tb_aib_axi_top_modif();
 
   
   reg  [16:0] follower_i_cfg_avmm_addr;
-  reg  [3:0]  follower_i_cfg_avmm_byte_en;
+  reg  [BYTE_WIDTH-1:0]  follower_i_cfg_avmm_byte_en;
   reg         follower_i_cfg_avmm_read;
   reg         follower_i_cfg_avmm_write;
-  reg  [31:0] follower_i_cfg_avmm_wdata;
+  reg  [AVMM_WIDTH-1:0] follower_i_cfg_avmm_wdata;
   wire        follower_o_cfg_avmm_rdatavld;
-  wire [31:0] follower_o_cfg_avmm_rdata;
+  wire [AVMM_WIDTH-1:0] follower_o_cfg_avmm_rdata;
   wire        follower_o_cfg_avmm_waitreq;
 
   
@@ -178,7 +181,9 @@ module tb_aib_axi_top_modif();
       .DWIDTH            (DWIDTH),
       .ADDRWIDTH         (ADDRWIDTH),
       .IDWIDTH           (IDWIDTH),
-      .GEN2_MODE         (1'b1)
+      .GEN2_MODE         (1'b1),
+      .AVMM_WIDTH        (AVMM_WIDTH),
+      .BYTE_WIDTH        (BYTE_WIDTH)
   ) dut (
       // --- Leader (Master Bridge) Interface ---
       .leader_vddc1(HI),

@@ -30,7 +30,9 @@ module aib_axi_bridge_master #(
     parameter DWIDTH = 40,
     parameter AXI_CHNL_NUM = 1,     // Number of AXI channels
     parameter ADDRWIDTH = 32,       // Address width
-    parameter GEN2_MODE = 1'b1  
+    parameter GEN2_MODE = 1'b1,
+    parameter AVMM_WIDTH = 32,
+    parameter BYTE_WIDTH = 4
 ) (
 
     // ======= EMIB interface ======= 
@@ -88,12 +90,12 @@ module aib_axi_bridge_master #(
     input               i_cfg_avmm_clk,
     input               i_cfg_avmm_rst_n,
     input  [16:0]       i_cfg_avmm_addr,
-    input  [ 3:0]       i_cfg_avmm_byte_en,
+    input  [BYTE_WIDTH-1:0]       i_cfg_avmm_byte_en,
     input               i_cfg_avmm_read,
     input               i_cfg_avmm_write,
-    input  [31:0]       i_cfg_avmm_wdata,
+    input  [AVMM_WIDTH-1:0]       i_cfg_avmm_wdata,
     output              o_cfg_avmm_rdatavld,
-    output [31:0]       o_cfg_avmm_rdata,
+    output [AVMM_WIDTH-1:0]       o_cfg_avmm_rdata,
     output              o_cfg_avmm_waitreq,
 
     // ====== MAC <=> AXI-MM =======
@@ -132,10 +134,19 @@ module aib_axi_bridge_master #(
     assign data_in_f [79:0] = tx_phy0    [79:0];
     assign data_in   [79:0] = tx_phy0    [79:0];
 
-    avalon_mm_if #(.AVMM_WIDTH(32), .BYTE_WIDTH(4)) avmm_if_m1  (
+    avalon_mm_if #(.AVMM_WIDTH(AVMM_WIDTH), .BYTE_WIDTH(BYTE_WIDTH)) avmm_if_m1  (
         .clk    (avmm_clk)
     );
     assign avmm_if_m1.rst_n = avmm_rst_n;
+   
+    assign avmm_if_m1.address    = i_cfg_avmm_addr;      
+    assign avmm_if_m1.byteenable = i_cfg_avmm_byte_en;   
+    assign avmm_if_m1.read       = i_cfg_avmm_read;      
+    assign avmm_if_m1.write      = i_cfg_avmm_write;     
+    assign avmm_if_m1.writedata  = i_cfg_avmm_wdata;     
+    assign o_cfg_avmm_rdatavld   = avmm_if_m1.readdatavalid;
+    assign o_cfg_avmm_rdata      = avmm_if_m1.readdata;
+    assign o_cfg_avmm_waitreq    = avmm_if_m1.waitrequest;
 
 
 // Corrected instantiation for the aib_phy_top module

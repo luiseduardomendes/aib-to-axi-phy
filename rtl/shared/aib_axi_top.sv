@@ -29,7 +29,9 @@ module aib_axi_m2s2_top #(
     parameter AXI_CHNL_NUM      = 1,
     parameter ADDRWIDTH         = 32,
     parameter IDWIDTH           = 4,
-    parameter GEN2_MODE         = 1'b1
+    parameter GEN2_MODE         = 1'b1,
+    parameter AVMM_WIDTH        = 32,
+    parameter BYTE_WIDTH        = 4
 ) (
     // ========================================================================
     // Leader (AIB Master) Side Interface
@@ -59,12 +61,12 @@ module aib_axi_m2s2_top #(
     input leader_i_cfg_avmm_clk,
     input leader_i_cfg_avmm_rst_n,
     input [16:0] leader_i_cfg_avmm_addr,
-    input [3:0] leader_i_cfg_avmm_byte_en,
+    input [BYTE_WIDTH-1:0]  leader_i_cfg_avmm_byte_en,
     input leader_i_cfg_avmm_read,
     input leader_i_cfg_avmm_write,
-    input [31:0] leader_i_cfg_avmm_wdata,
+    input [AVMM_WIDTH-1:0]  leader_i_cfg_avmm_wdata,
     output leader_o_cfg_avmm_rdatavld,
-    output [31:0] leader_o_cfg_avmm_rdata,
+    output [AVMM_WIDTH-1:0] leader_o_cfg_avmm_rdata,
     output leader_o_cfg_avmm_waitreq,
 
     // --- Leader AXI-MM Clocks & Control ---
@@ -146,12 +148,12 @@ module aib_axi_m2s2_top #(
     input  follower_i_cfg_avmm_clk,
     input  follower_i_cfg_avmm_rst_n,
     input  [16:0] follower_i_cfg_avmm_addr,
-    input  [3:0]  follower_i_cfg_avmm_byte_en,
+    input  [BYTE_WIDTH-1:0]  follower_i_cfg_avmm_byte_en,
     input         follower_i_cfg_avmm_read,
     input         follower_i_cfg_avmm_write,
-    input  [31:0] follower_i_cfg_avmm_wdata,
+    input  [AVMM_WIDTH-1:0] follower_i_cfg_avmm_wdata,
     output        follower_o_cfg_avmm_rdatavld,
-    output [31:0] follower_o_cfg_avmm_rdata,
+    output [AVMM_WIDTH-1:0] follower_o_cfg_avmm_rdata,
     output        follower_o_cfg_avmm_waitreq,
 
 
@@ -216,7 +218,9 @@ module aib_axi_m2s2_top #(
         .AXI_CHNL_NUM    (AXI_CHNL_NUM),
         .ADDRWIDTH       (ADDRWIDTH),
         .IDWIDTH         (IDWIDTH),
-        .GEN2_MODE       (GEN2_MODE)
+        .GEN2_MODE       (GEN2_MODE),
+        .AVMM_WIDTH      (AVMM_WIDTH),
+        .BYTE_WIDTH      (BYTE_WIDTH)
     ) u_leader_bridge (
         .vddc1(leader_vddc1),
         .vddc2(leader_vddc2),
@@ -335,7 +339,9 @@ module aib_axi_m2s2_top #(
         .AXI_CHNL_NUM    (AXI_CHNL_NUM),
         .ADDRWIDTH       (ADDRWIDTH),
         .IDWIDTH         (IDWIDTH),
-        .GEN2_MODE       (GEN2_MODE)
+        .GEN2_MODE       (GEN2_MODE),
+        .AVMM_WIDTH      (AVMM_WIDTH),
+        .BYTE_WIDTH      (BYTE_WIDTH)
     ) u_follower_bridge (
         .vddc1(follower_vddc1),
         .vddc2(follower_vddc2),
