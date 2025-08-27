@@ -1,0 +1,3 @@
+-f ${FLISTS_DIR}/vendor/aib-protocols/ca.flist 
+-f ${FLISTS_DIR}/vendor/aib-protocols/common.flist 
+-f ${FLISTS_DIR}/vendor/aib-protocols/llink.flist

@@ -1,0 +1,7 @@
+${IMPL_RTL_DIR}/vendor/aib-protocols/ca/rtl/ca.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/ca/rtl/ca_tx_strb.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/ca/rtl/ca_rx_align.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/ca/rtl/ca_rx_align_fifo.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/ca/rtl/ca_tx_mux.sv
+
+-f ${FLISTS_DIR}/vendor/aib-protocols/common.flist

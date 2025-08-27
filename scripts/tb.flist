@@ -1,0 +1,34 @@
+/home/luismendes/aib-folders/rtl/vendor/aib-phy-hardware/v2.0/rev1.1/dv/test/data/maib_prog_rev1.1.inc
+/home/luismendes/aib-folders/rtl/vendor/aib-phy-hardware/v2.0/rev1/dv/interface/dut_emib.inc
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/agent.sv
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/axi_mm_csr.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/axi_mm_patchkr_top.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/axi_mm_patgen_top.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_aib_top.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_d128_h2h_wrapper_top.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_follower_app.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_incr_gen.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_leader_app.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_rand_gen.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/aximm_wr_ctrl.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/jtag2avmm_bridge.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/mm_csr_ctrl.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/test.inc
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common/top_aib.sv
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/sims/tb_mh2.1_sh1_d64/top_tb.v
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/common/rtl/syncfifo_mem1r1w.sv
+/home/luismendes/aib-folders/rtl/vendor/aib-protocols/spi-aib/dv/interface/dut_sl1_port.inc
+-d FOR_SIM_ONLY
+-d AIB_MODEL
+-d VCS
+-d SL_AIB_GEN1
+-d MAIB_REV1DOT1
+-d MS_AIB_BCA
+-d TIMESCALE_EN
+-d BEHAVIORAL
+-d MAIB_PIN96
+-d ALTR_HPS_INTEL_MACROS_OFF
+-i /home/luismendes/aib-folders/rtl/vendor/aib-protocols/axi4-mm/full_examples/common
+-i /home/luismendes/aib-folders/rtl/vendor/aib-protocols/spi-aib/dv/interface
+-i /home/luismendes/aib-folders/rtl/vendor/aib-phy-hardware/v2.0/rev1/dv/interface
+-i /home/luismendes/aib-folders/rtl/vendor/aib-phy-hardware/v2.0/rev1.1/dv/test/data

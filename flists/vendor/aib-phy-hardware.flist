@@ -1,0 +1,6 @@
+-f ${FLISTS_DIR}/vendor/aib-phy-hardware/emib.flist
+-f ${FLISTS_DIR}/vendor/aib-phy-hardware/aib-maib.flist
+-f ${FLISTS_DIR}/vendor/aib-phy-hardware/aib-ana-models.flist
+
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/interface/dut_if_mac.sv
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/interface/avalon_mm_if.sv

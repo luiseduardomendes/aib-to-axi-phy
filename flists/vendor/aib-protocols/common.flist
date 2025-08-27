@@ -1,0 +1,10 @@
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/asyncfifo.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/levelsync_sr.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/levelsync.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/rrarb.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/syncfifo_mem1r1w.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/syncfifo.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/level_delay.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/syncfifo_reg.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/syncfifo_ram.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/common/rtl/rst_regen_low.sv

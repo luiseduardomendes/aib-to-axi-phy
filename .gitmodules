@@ -1,0 +1,9 @@
+[submodule "rtl/vendor/aib-phy-hardware"]
+    path = rtl/vendor/aib-phy-hardware
+    url = https://github.com/luiseduardomendes/aib-phy-hardware.git
+[submodule "rtl/vendor/aib-protocols"]
+    path = rtl/vendor/aib-protocols
+    url = https://github.com/luiseduardomendes/aib-protocols.git
+[submodule "rtl/axi_aib_tools"]
+    path = rtl/axi_aib_tools
+    url = https://github.com/luiseduardomendes/axi_aib_tools.git

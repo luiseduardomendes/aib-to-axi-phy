@@ -1,0 +1,2 @@
+-f ${FLISTS_DIR}/axi4_aib_tools/aib-axi-bridge-master.flist
+-f ${FLISTS_DIR}/axi4_aib_tools/aib-axi-bridge-slave.flist

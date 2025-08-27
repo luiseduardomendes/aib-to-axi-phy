@@ -1,0 +1,7 @@
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_receive.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_rx_ctrl.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_rx_push.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_transmit.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_tx_cred.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_tx_ctrl.sv
+${IMPL_RTL_DIR}/vendor/aib-protocols/llink/rtl/ll_auto_sync.sv

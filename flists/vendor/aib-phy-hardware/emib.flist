@@ -1,0 +1,6 @@
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/emib/aliasv.sv
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/emib/emib_ch_m2s2.sv
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/emib/emib_m2s2.sv
+
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/emib/emib_ch_m2s1.sv
+${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/emib/emib_m2s1.sv

@@ -1,0 +1,3 @@
+${IMPL_RTL_DIR}/axi4_aib_tools/rtl/axi_mm/axi_mm_master_top.sv
+${IMPL_RTL_DIR}/axi4_aib_tools/rtl/axi_mm/axi_mm_master_concat.sv
+${IMPL_RTL_DIR}/axi4_aib_tools/rtl/axi_mm/axi_mm_master_name.sv
