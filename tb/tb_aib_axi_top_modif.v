@@ -15,7 +15,7 @@ module tb_aib_axi_top_modif();
   parameter OSC_CYCLE         = 1 * CLK_SCALING;
   parameter AVMM_CYCLE        = 4;
 
-  parameter ACTIVE_CHNLS      = 1;
+  parameter ACTIVE_CHNLS      = 24;
   parameter NBR_CHNLS         = 24;
   parameter TOTAL_CHNL_NUM    = NBR_CHNLS;
   parameter DWIDTH            = 40;
@@ -34,10 +34,10 @@ module tb_aib_axi_top_modif();
   reg  leader_m_rd_clk;
   reg  leader_m_fwd_clk;
   reg leader_i_osc_clk;
-  reg leader_avmm_clk;
+  // reg leader_avmm_clk;
   reg leader_i_cfg_avmm_clk;
   reg [NBR_CHNLS-1:0] leader_ns_adapter_rstn;
-  reg leader_avmm_rst_n;
+  // reg leader_avmm_rst_n;
   reg leader_i_cfg_avmm_rst_n;
   reg leader_clk_wr;
   reg leader_rst_wr_n;
@@ -45,10 +45,10 @@ module tb_aib_axi_top_modif();
   reg  follower_m_wr_clk;
   reg  follower_m_rd_clk;
   reg  follower_m_fwd_clk;
-  reg follower_avmm_clk;
+  // reg follower_avmm_clk;
   reg follower_i_cfg_avmm_clk;
   reg [NBR_CHNLS-1:0] follower_ns_adapter_rstn;
-  reg follower_avmm_rst_n;
+  // reg follower_avmm_rst_n;
   reg follower_i_cfg_avmm_rst_n;
   reg follower_clk_wr;
   reg follower_rst_wr_n;
@@ -57,6 +57,17 @@ module tb_aib_axi_top_modif();
   reg  [NBR_CHNLS-1: 0] leader_ns_mac_rdy;
   wire [NBR_CHNLS-1: 0] leader_fs_mac_rdy;
   wire [NBR_CHNLS-1: 0] leader_m_rx_align_done;
+  // Leader DCC/DLL Lock Requests
+  reg  [NBR_CHNLS-1: 0] leader_ms_rx_dcc_dll_lock_req;
+  reg  [NBR_CHNLS-1: 0] leader_ms_tx_dcc_dll_lock_req;
+  reg  [NBR_CHNLS-1: 0] leader_sl_rx_dcc_dll_lock_req;
+  reg  [NBR_CHNLS-1: 0] leader_sl_tx_dcc_dll_lock_req;
+  
+  reg                   leader_m_por_ovrd;
+  reg                   leader_m_device_detect_ovrd;
+  reg                   leader_i_m_power_on_reset;
+  wire                  leader_m_device_detect;
+  wire                  leader_o_m_power_on_reset;
 
   // Leader AVMM Configuration Interface
   reg  [16:0] leader_i_cfg_avmm_addr;
@@ -106,16 +117,28 @@ module tb_aib_axi_top_modif();
   wire [NBR_CHNLS-1: 0] follower_m_rx_align_done;
   wire [NBR_CHNLS-1: 0] follower_ms_tx_transfer_en;
   wire [NBR_CHNLS-1: 0] follower_sl_tx_transfer_en;
+  // Follower DCC/DLL Lock Requests
+  reg  [NBR_CHNLS-1: 0] follower_ms_rx_dcc_dll_lock_req;
+  reg  [NBR_CHNLS-1: 0] follower_ms_tx_dcc_dll_lock_req;
+  reg  [NBR_CHNLS-1: 0] follower_sl_rx_dcc_dll_lock_req;
+  reg  [NBR_CHNLS-1: 0] follower_sl_tx_dcc_dll_lock_req;
+
+  reg                   follower_m_por_ovrd;
+  reg                   follower_m_device_detect_ovrd;
+  reg                   follower_i_m_power_on_reset;
+  wire                  follower_m_device_detect;
+  wire                  follower_o_m_power_on_reset;
+
 
   
-  reg  [16:0] follower_i_cfg_avmm_addr;
-  reg  [BYTE_WIDTH-1:0]  follower_i_cfg_avmm_byte_en;
-  reg         follower_i_cfg_avmm_read;
-  reg         follower_i_cfg_avmm_write;
-  reg  [AVMM_WIDTH-1:0] follower_i_cfg_avmm_wdata;
-  wire        follower_o_cfg_avmm_rdatavld;
-  wire [AVMM_WIDTH-1:0] follower_o_cfg_avmm_rdata;
-  wire        follower_o_cfg_avmm_waitreq;
+  reg  [16:0]             follower_i_cfg_avmm_addr;
+  reg  [BYTE_WIDTH-1:0]   follower_i_cfg_avmm_byte_en;
+  reg                     follower_i_cfg_avmm_read;
+  reg                     follower_i_cfg_avmm_write;
+  reg  [AVMM_WIDTH-1:0]   follower_i_cfg_avmm_wdata;
+  wire                    follower_o_cfg_avmm_rdatavld;
+  wire [AVMM_WIDTH-1:0]   follower_o_cfg_avmm_rdata;
+  wire                    follower_o_cfg_avmm_waitreq;
 
   
   // Follower AXI Master Interface (monitored by testbench)
@@ -198,8 +221,18 @@ module tb_aib_axi_top_modif();
       .leader_ns_mac_rdy(leader_ns_mac_rdy),
       .leader_fs_mac_rdy(leader_fs_mac_rdy),
       .leader_m_rx_align_done(leader_m_rx_align_done),
-      .leader_avmm_clk(leader_avmm_clk),
-      .leader_avmm_rst_n(leader_avmm_rst_n),
+      .leader_ms_rx_dcc_dll_lock_req(leader_ms_rx_dcc_dll_lock_req),
+      .leader_ms_tx_dcc_dll_lock_req(leader_ms_tx_dcc_dll_lock_req),
+      .leader_sl_rx_dcc_dll_lock_req(leader_sl_rx_dcc_dll_lock_req),
+      .leader_sl_tx_dcc_dll_lock_req(leader_sl_tx_dcc_dll_lock_req),
+      // Aux Channel
+      .leader_m_por_ovrd             (leader_m_por_ovrd),
+      .leader_m_device_detect_ovrd   (leader_m_device_detect_ovrd),
+      .leader_i_m_power_on_reset     (leader_i_m_power_on_reset),
+      .leader_m_device_detect        (leader_m_device_detect),
+      .leader_o_m_power_on_reset     (leader_o_m_power_on_reset),
+      // .leader_avmm_clk(leader_avmm_clk),
+      // .leader_avmm_rst_n(leader_avmm_rst_n),
       .leader_i_cfg_avmm_clk(leader_i_cfg_avmm_clk),
       .leader_i_cfg_avmm_rst_n(leader_i_cfg_avmm_rst_n),
       .leader_i_cfg_avmm_addr(leader_i_cfg_avmm_addr),
@@ -260,10 +293,19 @@ module tb_aib_axi_top_modif();
       .follower_ns_mac_rdy(follower_ns_mac_rdy),
       .follower_fs_mac_rdy(follower_fs_mac_rdy),
       .follower_m_rx_align_done(follower_m_rx_align_done),
+      .follower_ms_rx_dcc_dll_lock_req(follower_ms_rx_dcc_dll_lock_req),
+      .follower_ms_tx_dcc_dll_lock_req(follower_ms_tx_dcc_dll_lock_req),
+      .follower_sl_rx_dcc_dll_lock_req(follower_sl_rx_dcc_dll_lock_req),
+      .follower_sl_tx_dcc_dll_lock_req(follower_sl_tx_dcc_dll_lock_req),
+      .follower_m_por_ovrd(follower_m_por_ovrd),
+      .follower_m_device_detect_ovrd(follower_m_device_detect_ovrd),
+      .follower_i_m_power_on_reset(follower_i_m_power_on_reset),
+      .follower_m_device_detect(follower_m_device_detect),
+      .follower_o_m_power_on_reset(follower_o_m_power_on_reset),
+      // .follower_avmm_clk            (follower_avmm_clk),
+      // .follower_avmm_rst_n          (follower_avmm_rst_n),
       .follower_i_cfg_avmm_clk      (follower_i_cfg_avmm_clk),
       .follower_i_cfg_avmm_rst_n    (follower_i_cfg_avmm_rst_n),
-      .follower_avmm_clk            (follower_avmm_clk),
-      .follower_avmm_rst_n          (follower_avmm_rst_n),
       .follower_i_cfg_avmm_addr     (follower_i_cfg_avmm_addr),
       .follower_i_cfg_avmm_byte_en  (follower_i_cfg_avmm_byte_en),
       .follower_i_cfg_avmm_read     (follower_i_cfg_avmm_read),
@@ -322,14 +364,14 @@ module tb_aib_axi_top_modif();
     leader_m_rd_clk = 1'b0;
     leader_m_fwd_clk = 1'b0;
     leader_i_osc_clk = 1'b0;
-    leader_avmm_clk = 1'b0;
+    // leader_avmm_clk = 1'b0;
     leader_i_cfg_avmm_clk = 1'b0;
     leader_clk_wr = 1'b0;
 
     follower_m_wr_clk = 1'b0;
     follower_m_rd_clk = 1'b0;
     follower_m_fwd_clk = 1'b0;
-    follower_avmm_clk = 1'b0;
+    // follower_avmm_clk = 1'b0;
     follower_i_cfg_avmm_clk = 1'b0;
     follower_clk_wr = 1'b0;
   end
@@ -338,14 +380,14 @@ module tb_aib_axi_top_modif();
   always #(RD_CYCLE/2)   leader_m_rd_clk <= ~leader_m_rd_clk;
   always #(FWD_CYCLE/2)  leader_m_fwd_clk <= ~leader_m_fwd_clk;
   always #(OSC_CYCLE/2)  leader_i_osc_clk <= ~leader_i_osc_clk;
-  always #(AVMM_CYCLE/2) leader_avmm_clk <= ~leader_avmm_clk;
+  // always #(AVMM_CYCLE/2) leader_avmm_clk <= ~leader_avmm_clk;
   always #(AVMM_CYCLE/2) leader_i_cfg_avmm_clk <= ~leader_i_cfg_avmm_clk;
   always #(WR_CYCLE/2)   leader_clk_wr <= ~leader_clk_wr;
 
   always #(WR_CYCLE/2)   follower_m_wr_clk <= ~follower_m_wr_clk;
   always #(RD_CYCLE/2)   follower_m_rd_clk <= ~follower_m_rd_clk;
   always #(FWD_CYCLE/2)  follower_m_fwd_clk <= ~follower_m_fwd_clk;
-  always #(AVMM_CYCLE/2) follower_avmm_clk <= ~follower_avmm_clk;
+  // always #(AVMM_CYCLE/2) follower_avmm_clk <= ~follower_avmm_clk;
   always #(AVMM_CYCLE/2) follower_i_cfg_avmm_clk <= ~follower_i_cfg_avmm_clk;
   always #(WR_CYCLE/2)   follower_clk_wr <= ~follower_clk_wr;
 
@@ -355,43 +397,92 @@ module tb_aib_axi_top_modif();
   // ========================================================================
 
   // --- Reset Task ---
-  task reset_duts;
-  begin
-    $display("%0t: AIB : Asserting resets.", $time);
-    leader_ns_adapter_rstn <= '0;
-    leader_avmm_rst_n <= 1'b0;
-    leader_i_cfg_avmm_rst_n <= 1'b0;
-    leader_rst_wr_n <= 1'b0;
+  task reset_duts ();
+    begin
+         $display("\n////////////////////////////////////////////////////////////////////////////");
+         $display("%0t: Into task reset_dut", $time);
+         $display("////////////////////////////////////////////////////////////////////////////\n");
 
-    follower_ns_adapter_rstn <= '0;
-    follower_rst_wr_n <= 1'b0;
+         //top_tb.err_count = 0;
+         leader_i_cfg_avmm_rst_n = 1'b0;
+         leader_i_cfg_avmm_addr = '0;
+         leader_i_cfg_avmm_write = 1'b0;
+         leader_i_cfg_avmm_read  = 1'b0;
+         leader_i_cfg_avmm_wdata = '0;
+         leader_i_cfg_avmm_byte_en = '0;
+         
+         follower_i_cfg_avmm_rst_n = 1'b0;
+         follower_i_cfg_avmm_addr = '0;
+         follower_i_cfg_avmm_write = 1'b0;
+         follower_i_cfg_avmm_read  = 1'b0;
+         follower_i_cfg_avmm_wdata = '0;
+         follower_i_cfg_avmm_byte_en = '0;
 
-    // Initialize AXI interfaces
-    s_axi_awvalid <= 1'b0;
-    s_axi_wvalid  <= 1'b0;
-    s_axi_bready  <= 1'b1; // Always ready to accept response
-    s_axi_arvalid <= 1'b0;
-    s_axi_rready  <= 1'b1; // Always ready to accept read data
+         // intf_s1.i_conf_done     = 1'b0;
+         follower_ns_mac_rdy      = '0;
+         follower_ns_adapter_rstn = '0;
+         follower_rst_wr_n        = 1'b0;
+         follower_ms_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         follower_ms_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         follower_sl_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         follower_sl_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         
 
-    m_axi_awready <= 1'b1; // Testbench is ready
-    m_axi_wready  <= 1'b1; // Testbench is ready
-    m_axi_bvalid  <= 1'b0;
-    m_axi_arready <= 1'b1; // Testbench is ready
-    m_axi_rvalid  <= 1'b0;
+         // intf_m1.i_conf_done = 1'b0;
+         leader_ns_mac_rdy      = '0;
+         leader_ns_adapter_rstn = '0;
+         leader_rst_wr_n        = 1'b0;
+         leader_ms_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         leader_ms_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         leader_sl_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         leader_sl_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
 
-    repeat (20) @(posedge leader_m_wr_clk);
-    
-    $display("%0t: AIB : De-asserting resets.", $time);
-    leader_ns_adapter_rstn <= {24{1'b1}};
-    leader_avmm_rst_n <= 1'b1;
-    leader_i_cfg_avmm_rst_n <= 1'b1;
-    leader_rst_wr_n <= 1'b1;
-    
-    follower_ns_adapter_rstn <= {24{1'b1}};
-    follower_rst_wr_n <= 1'b1;
-    
-    repeat (5) @(posedge leader_m_wr_clk);
-  end
+         leader_m_por_ovrd = '0;
+         leader_m_device_detect_ovrd = '0;
+         leader_i_m_power_on_reset = '0;
+
+         follower_m_por_ovrd = '0;
+         follower_m_device_detect_ovrd = '0;
+         follower_i_m_power_on_reset = '0;
+         #100ns;
+
+         leader_m_por_ovrd = 1'b1;   
+         follower_m_device_detect_ovrd = 1'b0;
+         follower_i_m_power_on_reset = 1'b0;
+
+         // intf_m1.data_in = {TOTAL_CHNL_NUM{80'b0}};
+         // intf_m1.data_in_f = {TOTAL_CHNL_NUM{320'b0}};
+         // intf_m1.gen1_data_in = {TOTAL_CHNL_NUM{80'b0}};
+         // intf_m1.gen1_data_in_f = {TOTAL_CHNL_NUM{320'b0}};
+
+         // intf_s1.data_in = {TOTAL_CHNL_NUM{80'b0}};
+         // intf_s1.data_in_f = {TOTAL_CHNL_NUM{320'b0}};
+         // intf_s1.gen1_data_in = {TOTAL_CHNL_NUM{80'b0}};
+         // intf_s1.gen1_data_in_f = {TOTAL_CHNL_NUM{320'b0}};
+
+
+         #100ns;
+         follower_i_m_power_on_reset = 1'b1;
+         $display("\n////////////////////////////////////////////////////////////////////////////");
+         $display("%0t: Follower (Slave) power_on_reset asserted", $time);
+         $display("////////////////////////////////////////////////////////////////////////////\n");
+
+         #200ns;
+         follower_i_m_power_on_reset = 1'b0;
+         $display("\n////////////////////////////////////////////////////////////////////////////");
+         $display("%0t: Follower (Slave)  power_on_reset de-asserted", $time);
+         $display("////////////////////////////////////////////////////////////////////////////\n");
+
+         #200ns;
+         leader_rst_wr_n = 1'b1;
+         follower_rst_wr_n = 1'b1;
+
+         leader_i_cfg_avmm_rst_n = 1'b1;
+         follower_i_cfg_avmm_rst_n = 1'b1;
+
+         #100ns;
+         $display("%0t: %m: de-asserting configuration reset and start configuration setup", $time);
+    end
   endtask
 
   // --- AVMM Write Task ---
@@ -411,9 +502,9 @@ module tb_aib_axi_top_modif();
     end
     
     leader_i_cfg_avmm_write <= 1'b0;
-    leader_i_cfg_avmm_addr <= 'x;
-    leader_i_cfg_avmm_byte_en <= 'x;
-    leader_i_cfg_avmm_wdata <= 'x;
+    leader_i_cfg_avmm_addr <= '0;
+    leader_i_cfg_avmm_byte_en <= '0;
+    leader_i_cfg_avmm_wdata <= '0;
   end
   endtask
   
@@ -457,8 +548,8 @@ module tb_aib_axi_top_modif();
   task link_up;
   begin
     fork
-        wait (follower_ms_tx_transfer_en == {TOTAL_CHNL_NUM{1'b1}});
-        wait (follower_sl_tx_transfer_en == {TOTAL_CHNL_NUM{1'b1}});
+        wait (leader_fs_mac_rdy == {TOTAL_CHNL_NUM{1'b1}});
+        wait (follower_fs_mac_rdy == {TOTAL_CHNL_NUM{1'b1}});
     join;
   end
   endtask
@@ -471,7 +562,7 @@ module tb_aib_axi_top_modif();
       // Address Write
       @(posedge leader_clk_wr);
       s_axi_awid    <= 4'h1;
-      s_axi_awaddr  <= 32'h1000_0000;
+      s_axi_awaddr  <= 32'h1000;
       s_axi_awlen   <= 8'd0; // 1 beat (awlen+1)
       s_axi_awsize  <= 3'b100; // 16 bytes (128 bits)
       s_axi_awburst <= 2'b01;  // INCR
@@ -484,7 +575,7 @@ module tb_aib_axi_top_modif();
       // Write Data (Single Beat)
       @(posedge leader_clk_wr);
       s_axi_wid    <= 4'h1;
-      s_axi_wdata  <= 64'hA5A5_0000_0000_0000;
+      s_axi_wdata  <= 64'hA5A5;
       s_axi_wstrb  <= 15'hFF;
       s_axi_wlast  <= 1'b1;
       s_axi_wvalid <= 1'b1;
@@ -504,6 +595,59 @@ module tb_aib_axi_top_modif();
   end
   endtask
 
+  // --- AXI Write Receive Task (Follower/Slave Side) ---
+  // Versão melhorada da tarefa do AXI Follower
+task axi_slave_receive_write;
+  reg [7:0] beat_count;
+  reg [7:0] burst_len;
+  reg [IDWIDTH-1:0] received_awid;
+
+  begin
+    // Inicializa os sinais para o estado padrão
+    m_axi_awready <= 1'b1;
+    m_axi_wready  <= 1'b1;
+    m_axi_bvalid  <= 1'b1;
+
+    // Loop principal para sempre aguardar por novas transações
+    forever begin
+      // Fica pronto para aceitar um novo endereço de escrita
+      m_axi_awready <= 1'b1;
+      @(posedge follower_clk_wr); // Espera um ciclo para que o Master possa ver o awready
+
+      // Espera por uma solicitação de endereço de escrita válida
+      wait (m_axi_awvalid);
+
+      // --- Fase de Endereço (AW) ---
+      burst_len = m_axi_awlen;
+      received_awid = m_axi_awid;
+      $display("[%0t] Follower: AW Handshake. Addr=0x%08h, Len=%0d", $time, m_axi_awaddr, m_axi_awlen + 1);
+      
+      // Handshake concluído, fica ocupado para a próxima solicitação de endereço
+      @(posedge follower_clk_wr);
+      m_axi_awready <= 1'b0;
+
+      // --- Fase de Dados (W) ---
+      m_axi_wready <= 1'b1; // Agora está pronto para receber os dados
+      for (beat_count = 0; beat_count <= burst_len; beat_count = beat_count + 1) begin
+        wait (m_axi_wvalid); // Espera por dados válidos do master
+        $display("[%0t] Follower: WDATA[%0d] recebido. WLAST=%b", $time, beat_count, m_axi_wlast);
+        @(posedge follower_clk_wr);
+      end
+      m_axi_wready <= 1'b0; // Terminou de receber os dados
+
+      // --- Fase de Resposta (B) ---
+      m_axi_bvalid <= 1'b1;
+      m_axi_bid    <= received_awid;
+      m_axi_bresp  <= 2'b00; // OKAY
+      
+      wait (m_axi_bready); // Espera o master aceitar a resposta
+      @(posedge follower_clk_wr);
+      m_axi_bvalid <= 1'b0;
+      $display("[%0t] Follower: Transação de escrita concluída.", $time);
+    end
+  end
+endtask
+
   // --- AXI Read Transaction Task (Example) ---
   task axi_read_transaction;
   begin
@@ -515,11 +659,31 @@ module tb_aib_axi_top_modif();
   endtask
 
 
+  initial begin
+    fork
+        axi_slave_receive_write();
+    join_none
+end
+
+
   // ========================================================================
   // Main Test Sequence
   // ========================================================================
   initial begin
     begin
+
+      m_axi_awready <= 1'b1;
+      m_axi_arready <= 1'b1;
+      m_axi_wready <= 1'b1;
+      m_axi_bvalid <= 1'b1;
+      m_axi_bid <= '0;
+      m_axi_bresp <= '0;
+      m_axi_rvalid <= 1'b1;
+      m_axi_rresp <= '0;
+      m_axi_rlast <= '0;
+      m_axi_rdata <= '0;
+      m_axi_rid <= '0;
+
       status = "Reset DUT";
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Get into Main initial", $time);
@@ -538,14 +702,21 @@ module tb_aib_axi_top_modif();
       $display("%0t: No dbi enabled", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");
 
+
       // The internal signals like fifo_mode, markbit, gen1 etc.
       // need to be controlled via a configuration bus like AVMM.
       // The writes below are based on the addresses from your original code.
       // These will now go through the wrapper's AVMM interface.
       for (i_m1=0; i_m1<ACTIVE_CHNLS; i_m1++) begin
           cfg_write({i_m1,11'h208}, 4'hf, 32'h0600_0000); // Corresponds to fifo_mode settings
-          cfg_write({i_m1,11'h210}, 4'hf, 32'h0000_000b); // Corresponds to gen1 settings
-          cfg_write({i_m1,11'h218}, 4'hf, 32'h60a1_0000); // Corresponds to markbit settings
+          cfg_write({i_m1,11'h210}, 4'hf, 32'h0000_0006); // Corresponds to gen1 settings
+          cfg_write({i_m1,11'h218}, 4'hf, 32'h6060_0000); // Corresponds to markbit settings
+      end
+
+      for (i_s1=0; i_s1<ACTIVE_CHNLS; i_s1++) begin
+          follower_cfg_write({i_s1,11'h208}, 4'hf, 32'h0600_0000); // Corresponds to fifo_mode settings
+          follower_cfg_write({i_s1,11'h210}, 4'hf, 32'h0000_0006); // Corresponds to gen1 settings
+          follower_cfg_write({i_s1,11'h218}, 4'hf, 32'h6060_0000); // Corresponds to markbit settings
       end
 
       run_for_n_pkts_ms1 = 40;
@@ -557,6 +728,10 @@ module tb_aib_axi_top_modif();
 
       duts_wakeup ();
       status = "Waiting for link up";
+
+      #1000ns
+
+      // axi_slave_receive_write();
 
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Waiting for link up", $time);
@@ -590,4 +765,24 @@ module tb_aib_axi_top_modif();
     end
   end
 
+  // Monitor AXI write address channel
+  always @(posedge follower_clk_wr) begin
+      if (m_axi_awvalid && m_axi_awready) begin
+          $display("%0t: Follower: Received AW: addr=0x%08h, len=%0d", $time, m_axi_awaddr, m_axi_awlen + 1);
+      end
+  end
+
+  // Monitor AXI write data channel
+  always @(posedge follower_clk_wr) begin
+      if (m_axi_wvalid && m_axi_wready) begin
+          $display("%0t: Follower: Received WDATA=0x%h, WSTRB=0x%h, WLAST=%b", $time, m_axi_wdata, m_axi_wstrb, m_axi_wlast);
+      end
+  end
+
+  // Monitor AXI write response channel
+  always @(posedge follower_clk_wr) begin
+      if (m_axi_bvalid && m_axi_bready) begin
+          $display("%0t: Follower: Sent write response: BRESP=%0h, BID=%0h", $time, m_axi_bresp, m_axi_bid);
+      end
+  end
 endmodule

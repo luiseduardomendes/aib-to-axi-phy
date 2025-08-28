@@ -84,9 +84,21 @@ module aib_axi_bridge_master #(
     output [NBR_CHNLS-1:0] fs_mac_rdy, 
     output [NBR_CHNLS-1:0] m_rx_align_done, 
 
+    input  [NBR_CHNLS-1:0] ms_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] ms_tx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] sl_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] sl_tx_dcc_dll_lock_req,
+
+    // Aux Channel
+    input                  m_por_ovrd,
+    input                  m_device_detect_ovrd,
+    input                  i_m_power_on_reset,
+    output                 m_device_detect,
+    output                 o_m_power_on_reset,
+
     // Avalon MM interface
-    input               avmm_clk,
-    input               avmm_rst_n,
+    // input               avmm_clk,
+    // input               avmm_rst_n,
     input               i_cfg_avmm_clk,
     input               i_cfg_avmm_rst_n,
     input  [16:0]       i_cfg_avmm_addr,
@@ -123,21 +135,23 @@ module aib_axi_bridge_master #(
         .osc_clk(i_osc_clk)
     );
 
-    logic [DWIDTH*NBR_CHNLS-1:0] tx_phy0;
-    logic [DWIDTH*NBR_CHNLS-1:0] rx_phy0;
+    logic [DWIDTH*2-1:0] tx_phy0;
+    logic [DWIDTH*2-1:0] rx_phy0;
     logic [NBR_LANES*NBR_PHASES*2*NBR_CHNLS-1:0] data_in_f;
     logic [NBR_LANES*NBR_PHASES*2*NBR_CHNLS-1:0] data_out_f;
     logic [NBR_LANES*2*NBR_CHNLS-1:0] data_in;
     logic [NBR_LANES*2*NBR_CHNLS-1:0] data_out;
 
-    assign rx_phy0   [79:0] = data_out_f [79:0];
-    assign data_in_f [79:0] = tx_phy0    [79:0];
-    assign data_in   [79:0] = tx_phy0    [79:0];
+    assign fs_mac_rdy = intf_m1.fs_mac_rdy; // Loopback for single device testing
+    
+    assign rx_phy0   [79:0] = rst_wr_n ? data_out   [79:0] : '0;
+    assign data_in_f [79:0] = rst_wr_n ? tx_phy0    [79:0] : '0;
+    assign data_in   [79:0] = rst_wr_n ? tx_phy0    [79:0] : '0;
 
     avalon_mm_if #(.AVMM_WIDTH(AVMM_WIDTH), .BYTE_WIDTH(BYTE_WIDTH)) avmm_if_m1  (
-        .clk    (avmm_clk)
+        .clk    (i_cfg_avmm_clk)
     );
-    assign avmm_if_m1.rst_n = avmm_rst_n;
+    assign avmm_if_m1.rst_n = i_cfg_avmm_rst_n;
    
     assign avmm_if_m1.address    = i_cfg_avmm_addr;      
     assign avmm_if_m1.byteenable = i_cfg_avmm_byte_en;   
@@ -201,15 +215,15 @@ aib_model_top #(
         // Control and Status Signals
         .ns_adapter_rstn(ns_adapter_rstn),  
         .ns_mac_rdy(ns_mac_rdy),       
-        .fs_mac_rdy(fs_mac_rdy),  
-        .i_conf_done(i_conf_done),
+        .fs_mac_rdy(intf_m1.fs_mac_rdy),  
+        .i_conf_done(ns_mac_rdy[0]),
         .i_osc_clk(intf_m1.osc_clk),
         
         // Handshake and Sideband Signals
-        .ms_rx_dcc_dll_lock_req({24{1'b1}}),
-        .ms_tx_dcc_dll_lock_req({24{1'b1}}),         
-        .sl_rx_dcc_dll_lock_req({24{1'b1}}),                        
-        .sl_tx_dcc_dll_lock_req({24{1'b1}}),                        
+        .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
+        .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),         
+        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req),                        
+        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req),                        
         .ms_tx_transfer_en(intf_m1.ms_tx_transfer_en),                   
         .ms_rx_transfer_en(intf_m1.ms_rx_transfer_en),                   
         .sl_tx_transfer_en(intf_m1.sl_tx_transfer_en),
@@ -235,11 +249,11 @@ aib_model_top #(
         .o_cfg_avmm_waitreq(avmm_if_m1.waitrequest),
 
         // Aux Channel
-        .m_por_ovrd(1'b0),
-        .m_device_detect_ovrd(1'b0),
-        .i_m_power_on_reset(1'b0),
-        .m_device_detect(intf_m1.m_device_detect),
-        .o_m_power_on_reset(intf_m1.o_m_power_on_reset),
+        .m_por_ovrd             (m_por_ovrd),
+        .m_device_detect_ovrd   (m_device_detect_ovrd),
+        .i_m_power_on_reset     (i_m_power_on_reset),
+        .m_device_detect        (m_device_detect),
+        .o_m_power_on_reset     (o_m_power_on_reset),
 
         // JTAG Ports
         .i_jtag_clkdr(1'b0),
@@ -274,8 +288,8 @@ aib_model_top #(
     axi_mm_master_top  aximm_leader(
         .clk_wr              (clk_wr ),
         .rst_wr_n            (rst_wr_n),
-        .tx_online           (intf_m1.sl_tx_transfer_en[0] & intf_m1.ms_tx_transfer_en[0]),
-        .rx_online           (intf_m1.sl_rx_transfer_en[0] & intf_m1.ms_rx_transfer_en[0]),
+        .tx_online           (intf_m1.fs_mac_rdy[0]),
+        .rx_online           (intf_m1.fs_mac_rdy[0]),
         .init_ar_credit      (init_ar_credit),
         .init_aw_credit      (init_aw_credit),
         .init_w_credit       (init_w_credit ),
@@ -322,4 +336,5 @@ aib_model_top #(
         .delay_y_value       (delay_y_value),
         .delay_z_value       (delay_z_value)
     );
+
 endmodule

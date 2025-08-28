@@ -73,9 +73,9 @@ module aib_axi_bridge_slave #(
     
     // ======= AIB <=> MAC ========
     // Clock Signals
-    input   m_wr_clk,     
-    input   m_rd_clk,    
-    input   m_fwd_clk,     
+    input                  m_wr_clk,     
+    input                  m_rd_clk,    
+    input                  m_fwd_clk,     
 
     // Control Signals
     input  [NBR_CHNLS-1:0] ns_adapter_rstn,
@@ -85,9 +85,21 @@ module aib_axi_bridge_slave #(
     output [NBR_CHNLS-1:0] ms_tx_transfer_en,
     output [NBR_CHNLS-1:0] sl_tx_transfer_en,
 
+    input  [NBR_CHNLS-1:0] ms_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] ms_tx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] sl_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] sl_tx_dcc_dll_lock_req,
+
+    // Aux Channel
+    input                  m_por_ovrd,
+    input                  m_device_detect_ovrd,
+    input                  i_m_power_on_reset,
+    output                 m_device_detect,
+    output                 o_m_power_on_reset,
+
     // Avalon MM interface
-    input               avmm_clk,
-    input               avmm_rst_n,
+    // input               avmm_clk,
+    // input               avmm_rst_n,
     input               i_cfg_avmm_clk,
     input               i_cfg_avmm_rst_n,
     input  [16:0]       i_cfg_avmm_addr,
@@ -124,21 +136,23 @@ module aib_axi_bridge_slave #(
         .osc_clk(i_osc_clk)
     );
 
-    logic [DWIDTH*2*NBR_PHASES-1:0] tx_phy0;
-    logic [DWIDTH*2*NBR_PHASES-1:0] rx_phy0;
+    logic [DWIDTH*2-1:0] tx_phy0;
+    logic [DWIDTH*2-1:0] rx_phy0;
     logic [NBR_LANES*NBR_PHASES*2*NBR_CHNLS-1:0] data_in_f;
     logic [NBR_LANES*NBR_PHASES*2*NBR_CHNLS-1:0] data_out_f;
     logic [NBR_LANES*2*NBR_CHNLS-1:0] data_in;
     logic [NBR_LANES*2*NBR_CHNLS-1:0] data_out;
 
-    assign rx_phy0   [79:0] = data_out_f [79:0];
-    assign data_in_f [79:0] = tx_phy0    [79:0];
-    assign data_in   [79:0] = tx_phy0    [79:0];
+    assign fs_mac_rdy = intf_s1.fs_mac_rdy;
+
+    assign rx_phy0   [79:0] = rst_wr_n ? data_out   [79:0] : '0;
+    assign data_in_f [79:0] = rst_wr_n ? tx_phy0    [79:0] : '0;
+    assign data_in   [79:0] = rst_wr_n ? tx_phy0    [79:0] : '0;
 
     avalon_mm_if #(.AVMM_WIDTH(AVMM_WIDTH), .BYTE_WIDTH(BYTE_WIDTH)) avmm_if_s1  (
-        .clk    (avmm_clk)
+        .clk    (i_cfg_avmm_clk)
     );
-    assign avmm_if_s1.rst_n = avmm_rst_n;
+    assign avmm_if_s1.rst_n = i_cfg_avmm_rst_n;
 
     assign avmm_if_s1.address      = i_cfg_avmm_addr;
     assign avmm_if_s1.byteenable   = i_cfg_avmm_byte_en;
@@ -204,15 +218,15 @@ module aib_axi_bridge_slave #(
         // Control and Status Signals
         .ns_adapter_rstn(ns_adapter_rstn),  
         .ns_mac_rdy(ns_mac_rdy),       
-        .fs_mac_rdy(fs_mac_rdy),  
-        .i_conf_done(i_conf_done),
+        .fs_mac_rdy(intf_s1.fs_mac_rdy),  
+        .i_conf_done(ns_mac_rdy[0]),
         //.i_osc_clk(1'b0), // Slave does not drive oscillator clock
         
         // Handshake and Sideband Signals
-        .ms_rx_dcc_dll_lock_req({24{1'b1}}),
-        .ms_tx_dcc_dll_lock_req({24{1'b1}}),         
-        .sl_rx_dcc_dll_lock_req(intf_s1.sl_rx_dcc_dll_lock_req),                        
-        .sl_tx_dcc_dll_lock_req(intf_s1.sl_tx_dcc_dll_lock_req),                        
+        .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
+        .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
+        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req),
+        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req),
         .ms_tx_transfer_en(intf_s1.ms_tx_transfer_en),                   
         .ms_rx_transfer_en(intf_s1.ms_rx_transfer_en),                   
         .sl_tx_transfer_en(intf_s1.sl_tx_transfer_en),
@@ -238,11 +252,11 @@ module aib_axi_bridge_slave #(
         .o_cfg_avmm_waitreq(avmm_if_s1.waitrequest),
 
         // Aux Channel
-        .m_por_ovrd(1'b0),
-        .m_device_detect_ovrd(1'b0),
-        .i_m_power_on_reset(1'b0),
-        .m_device_detect(intf_s1.m_device_detect),
-        .o_m_power_on_reset(intf_s1.o_m_power_on_reset),
+        .m_por_ovrd             (m_por_ovrd),
+        .m_device_detect_ovrd   (m_device_detect_ovrd),
+        .i_m_power_on_reset     (i_m_power_on_reset),
+        .m_device_detect        (m_device_detect),
+        .o_m_power_on_reset     (o_m_power_on_reset),
 
         // JTAG Ports
         .i_jtag_clkdr(1'b0),
@@ -278,8 +292,8 @@ module aib_axi_bridge_slave #(
     axi_mm_slave_top  aximm_follower(
         .clk_wr              (clk_wr ),
         .rst_wr_n            (rst_wr_n),
-        .tx_online           (&{intf_s1.sl_tx_transfer_en[0],intf_s1.ms_tx_transfer_en[0]}),
-        .rx_online           (&{intf_s1.sl_tx_transfer_en[0],intf_s1.ms_tx_transfer_en[0]}),
+        .tx_online           (intf_s1.fs_mac_rdy[0]),
+        .rx_online           (intf_s1.fs_mac_rdy[0]),
         .init_r_credit      (init_r_credit)  ,
         .init_b_credit      (init_b_credit)  ,
         .tx_phy0             (tx_phy0),

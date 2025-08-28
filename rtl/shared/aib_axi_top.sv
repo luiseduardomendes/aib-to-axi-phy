@@ -48,26 +48,35 @@ module aib_axi_m2s2_top #(
     input   leader_m_wr_clk,
     input   leader_m_rd_clk,
     input   leader_m_fwd_clk,
-    input                   leader_i_osc_clk,
+    input   leader_i_osc_clk,
     // --- Control
-    input  [NBR_CHNLS-1: 0] leader_ns_adapter_rstn,
-    input  [NBR_CHNLS-1: 0] leader_ns_mac_rdy,
-    output [NBR_CHNLS-1: 0] leader_fs_mac_rdy,
-    output [NBR_CHNLS-1: 0] leader_m_rx_align_done,
+    input  [NBR_CHNLS-1:0] leader_ns_adapter_rstn,
+    input  [NBR_CHNLS-1:0] leader_ns_mac_rdy,
+    output [NBR_CHNLS-1:0] leader_fs_mac_rdy,
+    output [NBR_CHNLS-1:0] leader_m_rx_align_done,
+    input  [NBR_CHNLS-1:0] leader_ms_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] leader_ms_tx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] leader_sl_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] leader_sl_tx_dcc_dll_lock_req,
+    input                  leader_m_por_ovrd,
+    input                  leader_m_device_detect_ovrd,
+    input                  leader_i_m_power_on_reset,
+    output                 leader_m_device_detect,
+    output                 leader_o_m_power_on_reset,
 
     // --- Leader Avalon MM Interface ---
-    input leader_avmm_clk,
-    input leader_avmm_rst_n,
-    input leader_i_cfg_avmm_clk,
-    input leader_i_cfg_avmm_rst_n,
-    input [16:0] leader_i_cfg_avmm_addr,
+    // input leader_avmm_clk,
+    // input leader_avmm_rst_n,
+    input                   leader_i_cfg_avmm_clk,
+    input                   leader_i_cfg_avmm_rst_n,
+    input [16:0]            leader_i_cfg_avmm_addr,
     input [BYTE_WIDTH-1:0]  leader_i_cfg_avmm_byte_en,
-    input leader_i_cfg_avmm_read,
-    input leader_i_cfg_avmm_write,
+    input                   leader_i_cfg_avmm_read,
+    input                   leader_i_cfg_avmm_write,
     input [AVMM_WIDTH-1:0]  leader_i_cfg_avmm_wdata,
-    output leader_o_cfg_avmm_rdatavld,
+    output                  leader_o_cfg_avmm_rdatavld,
     output [AVMM_WIDTH-1:0] leader_o_cfg_avmm_rdata,
-    output leader_o_cfg_avmm_waitreq,
+    output                  leader_o_cfg_avmm_waitreq,
 
     // --- Leader AXI-MM Clocks & Control ---
     input leader_clk_wr,
@@ -127,12 +136,21 @@ module aib_axi_m2s2_top #(
     input   follower_m_wr_clk,
     input   follower_m_rd_clk,
     input   follower_m_fwd_clk,
-    input  [NBR_CHNLS-1: 0] follower_ns_adapter_rstn,
-    input  [NBR_CHNLS-1: 0] follower_ns_mac_rdy,
-    output [NBR_CHNLS-1: 0] follower_fs_mac_rdy,
-    output [NBR_CHNLS-1: 0] follower_m_rx_align_done,
+    input  [NBR_CHNLS-1:0] follower_ns_adapter_rstn,
+    input  [NBR_CHNLS-1:0] follower_ns_mac_rdy,
+    output [NBR_CHNLS-1:0] follower_fs_mac_rdy,
+    output [NBR_CHNLS-1:0] follower_m_rx_align_done,
     output [NBR_CHNLS-1:0] follower_ms_tx_transfer_en,
     output [NBR_CHNLS-1:0] follower_sl_tx_transfer_en,
+    input  [NBR_CHNLS-1:0] follower_ms_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] follower_ms_tx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] follower_sl_rx_dcc_dll_lock_req,
+    input  [NBR_CHNLS-1:0] follower_sl_tx_dcc_dll_lock_req,
+    input                  follower_m_por_ovrd,
+    input                  follower_m_device_detect_ovrd,
+    input                  follower_i_m_power_on_reset,
+    output                 follower_m_device_detect,
+    output                 follower_o_m_power_on_reset,
 
     // --- Follower AXI-MM Clocks & Control ---
     input follower_clk_wr,
@@ -143,18 +161,18 @@ module aib_axi_m2s2_top #(
     input [15:0] follower_delay_y_value,
     input [15:0] follower_delay_z_value,
 
-    input  follower_avmm_clk,
-    input  follower_avmm_rst_n,
-    input  follower_i_cfg_avmm_clk,
-    input  follower_i_cfg_avmm_rst_n,
-    input  [16:0] follower_i_cfg_avmm_addr,
-    input  [BYTE_WIDTH-1:0]  follower_i_cfg_avmm_byte_en,
-    input         follower_i_cfg_avmm_read,
-    input         follower_i_cfg_avmm_write,
+    // input  follower_avmm_clk,
+    // input  follower_avmm_rst_n,
+    input                   follower_i_cfg_avmm_clk,
+    input                   follower_i_cfg_avmm_rst_n,
+    input  [16:0]           follower_i_cfg_avmm_addr,
+    input  [BYTE_WIDTH-1:0] follower_i_cfg_avmm_byte_en,
+    input                   follower_i_cfg_avmm_read,
+    input                   follower_i_cfg_avmm_write,
     input  [AVMM_WIDTH-1:0] follower_i_cfg_avmm_wdata,
-    output        follower_o_cfg_avmm_rdatavld,
+    output                  follower_o_cfg_avmm_rdatavld,
     output [AVMM_WIDTH-1:0] follower_o_cfg_avmm_rdata,
-    output        follower_o_cfg_avmm_waitreq,
+    output                  follower_o_cfg_avmm_waitreq,
 
 
     // --- Follower's AXI Master Interface (m_axi_*) ---
@@ -197,10 +215,8 @@ module aib_axi_m2s2_top #(
     wire [FOLLOWER_NBR_BUMPS-1:0] s_ch_aib [0:23];
     
     // Aux signals are 1-bit wide
-    wire leader_device_detect;
-    wire leader_power_on_reset;
-    wire follower_device_detect;
-    wire follower_power_on_reset;
+    wire device_detect;
+    wire power_on_reset;
 
     // ============================================================================
     // Leader (AIB Master) Bridge Instantiation
@@ -252,8 +268,8 @@ module aib_axi_m2s2_top #(
         .iopad_ch21_aib(m_ch_aib[21]),
         .iopad_ch22_aib(m_ch_aib[22]),
         .iopad_ch23_aib(m_ch_aib[23]),
-        .iopad_device_detect(leader_device_detect),
-        .iopad_power_on_reset(leader_power_on_reset),
+        .iopad_device_detect(device_detect),
+        .iopad_power_on_reset(power_on_reset),
 
         // AIB/MAC Interface
         .m_wr_clk(leader_m_wr_clk),
@@ -264,10 +280,20 @@ module aib_axi_m2s2_top #(
         .ns_mac_rdy(leader_ns_mac_rdy),
         .fs_mac_rdy(leader_fs_mac_rdy),
         .m_rx_align_done(leader_m_rx_align_done),
+        .ms_rx_dcc_dll_lock_req(leader_ms_rx_dcc_dll_lock_req),
+        .ms_tx_dcc_dll_lock_req(leader_ms_tx_dcc_dll_lock_req),
+        .sl_rx_dcc_dll_lock_req(leader_sl_rx_dcc_dll_lock_req),
+        .sl_tx_dcc_dll_lock_req(leader_sl_tx_dcc_dll_lock_req),
+
+        .m_por_ovrd(leader_m_por_ovrd),
+        .m_device_detect_ovrd(leader_m_device_detect_ovrd),
+        .i_m_power_on_reset(leader_i_m_power_on_reset),
+        .m_device_detect(leader_m_device_detect),
+        .o_m_power_on_reset(leader_o_m_power_on_reset),
 
         // Avalon MM Interface
-        .avmm_clk(leader_avmm_clk),
-        .avmm_rst_n(leader_avmm_rst_n),
+        // .avmm_clk(leader_avmm_clk),
+        // .avmm_rst_n(leader_avmm_rst_n),
         .i_cfg_avmm_clk(leader_i_cfg_avmm_clk),
         .i_cfg_avmm_rst_n(leader_i_cfg_avmm_rst_n),
         .i_cfg_avmm_addr(leader_i_cfg_avmm_addr),
@@ -373,8 +399,8 @@ module aib_axi_m2s2_top #(
         .iopad_ch21_aib(s_ch_aib[21]),
         .iopad_ch22_aib(s_ch_aib[22]),
         .iopad_ch23_aib(s_ch_aib[23]),
-        .iopad_device_detect(follower_device_detect),
-        .iopad_power_on_reset(follower_power_on_reset),
+        .iopad_device_detect(device_detect),
+        .iopad_power_on_reset(power_on_reset),
 
         // AIB/MAC Interface
         .m_wr_clk(follower_m_wr_clk),
@@ -386,6 +412,16 @@ module aib_axi_m2s2_top #(
         .m_rx_align_done(follower_m_rx_align_done),
         .ms_tx_transfer_en(follower_ms_tx_transfer_en),
         .sl_tx_transfer_en(follower_sl_tx_transfer_en),
+        .ms_rx_dcc_dll_lock_req(follower_ms_rx_dcc_dll_lock_req),
+        .ms_tx_dcc_dll_lock_req(follower_ms_tx_dcc_dll_lock_req),
+        .sl_rx_dcc_dll_lock_req(follower_sl_rx_dcc_dll_lock_req),
+        .sl_tx_dcc_dll_lock_req(follower_sl_tx_dcc_dll_lock_req),
+        
+        .m_por_ovrd(follower_m_por_ovrd),
+        .m_device_detect_ovrd(follower_m_device_detect_ovrd),
+        .i_m_power_on_reset(follower_i_m_power_on_reset),
+        .m_device_detect(follower_m_device_detect),
+        .o_m_power_on_reset(follower_o_m_power_on_reset),
 
         // AXI-MM Interface
         .clk_wr(follower_clk_wr),
@@ -397,8 +433,8 @@ module aib_axi_m2s2_top #(
         .delay_z_value(follower_delay_z_value),
 
         // Avalon MM Interface
-        .avmm_clk(follower_avmm_clk),
-        .avmm_rst_n(follower_avmm_rst_n),
+        // .avmm_clk(follower_avmm_clk),
+        // .avmm_rst_n(follower_avmm_rst_n),
         .i_cfg_avmm_clk(follower_i_cfg_avmm_clk),
         .i_cfg_avmm_rst_n(follower_i_cfg_avmm_rst_n),
         .i_cfg_avmm_addr(follower_i_cfg_avmm_addr),
