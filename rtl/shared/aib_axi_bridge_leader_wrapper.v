@@ -14,7 +14,7 @@
 //`include "axi_if.v"
 
 module top_aib_axi_bridge_master_wrapper #(
-    parameter ACTIVE_CHNLS      = 1,
+    parameter ACTIVE_CHNLS      = 24,
     parameter NBR_CHNLS         = 24,
     parameter NBR_BUMPS         = 102,
     parameter NBR_PHASES        = 4,
@@ -153,7 +153,7 @@ module top_aib_axi_bridge_master_wrapper #(
 
     // Instantiate the core AIB to AXI bridge master module
     aib_axi_bridge_master #(
-        //.ACTIVE_CHNLS(ACTIVE_CHNLS),
+        .ACTIVE_CHNLS(ACTIVE_CHNLS),
         .NBR_CHNLS(NBR_CHNLS),
         .NBR_BUMPS(NBR_BUMPS),
         .NBR_PHASES(NBR_PHASES),

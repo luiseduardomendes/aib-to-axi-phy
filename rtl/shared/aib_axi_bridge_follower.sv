@@ -20,8 +20,8 @@ supply0 LO;  // Global logic '0' (connects to gnd)
 
 
 module aib_axi_bridge_slave #(
-    parameter ACTIVE_CHNLS = 1,
-    parameter NBR_CHNLS = 24,       // Total number of channels 
+    parameter ACTIVE_CHNLS = 24,
+    parameter NBR_CHNLS = 24,       // Total number of channels
     parameter NBR_BUMPS = 102,      // Number of BUMPs
     parameter NBR_PHASES = 4,       // Number of phases
     parameter NBR_LANES = 40,       // Number of lanes
@@ -35,7 +35,7 @@ module aib_axi_bridge_slave #(
     parameter BYTE_WIDTH = 4
 ) (
 
-    // ======= EMIB interface ======= 
+    // ======= EMIB interface =======
     inout vddc1,  // vddc1 power supply pin (low noise for clock circuits)
     inout vddc2,  // vddc2 power supply pin for IOs circuits
     inout vddtx,  // vddtx power supply pin for high-speed data
@@ -70,18 +70,18 @@ module aib_axi_bridge_slave #(
     // Aux IO pads
     inout  iopad_device_detect,  // Indicates the presence of a valid leader
     inout  iopad_power_on_reset, // Perfoms a power-on-reset in the adapter
-    
+
     // ======= AIB <=> MAC ========
     // Clock Signals
-    input                  m_wr_clk,     
-    input                  m_rd_clk,    
-    input                  m_fwd_clk,     
+    input                  m_wr_clk,
+    input                  m_rd_clk,
+    input                  m_fwd_clk,
 
     // Control Signals
     input  [NBR_CHNLS-1:0] ns_adapter_rstn,
     input  [NBR_CHNLS-1:0] ns_mac_rdy,
-    output [NBR_CHNLS-1:0] fs_mac_rdy, 
-    output [NBR_CHNLS-1:0] m_rx_align_done, 
+    output [NBR_CHNLS-1:0] fs_mac_rdy,
+    output [NBR_CHNLS-1:0] m_rx_align_done,
     output [NBR_CHNLS-1:0] ms_tx_transfer_en,
     output [NBR_CHNLS-1:0] sl_tx_transfer_en,
 
@@ -114,25 +114,25 @@ module aib_axi_bridge_slave #(
     // ====== MAC <=> AXI-MM =======
     input               clk_wr,
     input               rst_wr_n,
-        
-    // Control signals 
+
+    // Control signals
     input   [7:0]       init_r_credit,
     input   [7:0]       init_b_credit,
-    
 
-    // Configuration 
+
+    // Configuration
     input   [15:0]      delay_x_value,
     input   [15:0]      delay_y_value,
     input   [15:0]      delay_z_value,
-        
-    // axi channel 
-    axi_if.master       user_axi_if     
+
+    // axi channel
+    axi_if.master       user_axi_if
 );
 
     dut_if_mac #(.DWIDTH (DWIDTH)) intf_s1 (
-        .wr_clk(m_wr_clk), 
-        .rd_clk(m_rd_clk), 
-        .fwd_clk(m_fwd_clk), 
+        .wr_clk(m_wr_clk),
+        .rd_clk(m_rd_clk),
+        .fwd_clk(m_fwd_clk),
         .osc_clk(i_osc_clk)
     );
 
@@ -168,73 +168,57 @@ module aib_axi_bridge_slave #(
 
 
     aib_model_top #(
-        // Assuming default parameters are acceptable.
+        .ACTIVE_CHNL_NUM(ACTIVE_CHNLS)
     ) dut_phy_slave1 (
         // AIB IO Pad Connections (Channels 0-23)
-        .iopad_ch0_aib(iopad_ch0_aib), 
-        .iopad_ch1_aib(iopad_ch1_aib), 
-        .iopad_ch2_aib(iopad_ch2_aib), 
-        .iopad_ch3_aib(iopad_ch3_aib), 
-        .iopad_ch4_aib(iopad_ch4_aib), 
-        .iopad_ch5_aib(iopad_ch5_aib), 
-        .iopad_ch6_aib(iopad_ch6_aib), 
-        .iopad_ch7_aib(iopad_ch7_aib), 
-        .iopad_ch8_aib(iopad_ch8_aib), 
-        .iopad_ch9_aib(iopad_ch9_aib), 
-        .iopad_ch10_aib(iopad_ch10_aib),
-        .iopad_ch11_aib(iopad_ch11_aib),
-        .iopad_ch12_aib(iopad_ch12_aib),
-        .iopad_ch13_aib(iopad_ch13_aib),
-        .iopad_ch14_aib(iopad_ch14_aib),
-        .iopad_ch15_aib(iopad_ch15_aib),
-        .iopad_ch16_aib(iopad_ch16_aib),
-        .iopad_ch17_aib(iopad_ch17_aib),
-        .iopad_ch18_aib(iopad_ch18_aib),
-        .iopad_ch19_aib(iopad_ch19_aib),
-        .iopad_ch20_aib(iopad_ch20_aib),
-        .iopad_ch21_aib(iopad_ch21_aib),
-        .iopad_ch22_aib(iopad_ch22_aib),
-        .iopad_ch23_aib(iopad_ch23_aib),
+        .iopad_aib({
+            iopad_ch0_aib, iopad_ch1_aib,  iopad_ch2_aib,  iopad_ch3_aib,  
+            iopad_ch4_aib,  iopad_ch5_aib,  iopad_ch6_aib,  iopad_ch7_aib,  
+            iopad_ch8_aib,  iopad_ch9_aib,  iopad_ch10_aib, iopad_ch11_aib, 
+            iopad_ch12_aib, iopad_ch13_aib, iopad_ch14_aib, iopad_ch15_aib, 
+            iopad_ch16_aib, iopad_ch17_aib, iopad_ch18_aib, iopad_ch19_aib, 
+            iopad_ch20_aib, iopad_ch21_aib, iopad_ch22_aib, iopad_ch23_aib
+        }),
         
         // IO pads, AUX channel
         .iopad_device_detect(iopad_device_detect),
         .iopad_power_on_reset(iopad_power_on_reset),
-        
+
         // Data Interface
-        .data_in_f(data_in_f),                      
-        .data_out_f(data_out_f),                     
+        .data_in_f(data_in_f),
+        .data_out_f(data_out_f),
         .data_in(data_in),
-        .data_out(data_out),                         
-                
+        .data_out(data_out),
+
         // Clock Interface
         .m_ns_fwd_clk(intf_s1.m_ns_fwd_clk),
-        .m_ns_rcv_clk(intf_s1.m_ns_rcv_clk),                         
-        .m_fs_rcv_clk(intf_s1.m_fs_rcv_clk),                         
-        .m_fs_fwd_clk(intf_s1.m_fs_fwd_clk),                         
-        .m_wr_clk(intf_s1.m_wr_clk),                              
+        .m_ns_rcv_clk(intf_s1.m_ns_rcv_clk),
+        .m_fs_rcv_clk(intf_s1.m_fs_rcv_clk),
+        .m_fs_fwd_clk(intf_s1.m_fs_fwd_clk),
+        .m_wr_clk(intf_s1.m_wr_clk),
         .m_rd_clk(intf_s1.m_rd_clk),
         .tclk_phy(),
 
         // Control and Status Signals
-        .ns_adapter_rstn(ns_adapter_rstn),  
-        .ns_mac_rdy(ns_mac_rdy),       
-        .fs_mac_rdy(intf_s1.fs_mac_rdy),  
+        .ns_adapter_rstn(ns_adapter_rstn),
+        .ns_mac_rdy(ns_mac_rdy),
+        .fs_mac_rdy(intf_s1.fs_mac_rdy),
         .i_conf_done(ns_mac_rdy[0]),
         //.i_osc_clk(1'b0), // Slave does not drive oscillator clock
-        
+
         // Handshake and Sideband Signals
         .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
         .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
         .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req),
         .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req),
-        .ms_tx_transfer_en(intf_s1.ms_tx_transfer_en),                   
-        .ms_rx_transfer_en(intf_s1.ms_rx_transfer_en),                   
+        .ms_tx_transfer_en(intf_s1.ms_tx_transfer_en),
+        .ms_rx_transfer_en(intf_s1.ms_rx_transfer_en),
         .sl_tx_transfer_en(intf_s1.sl_tx_transfer_en),
         .sl_rx_transfer_en(intf_s1.sl_rx_transfer_en),
-        .sr_ms_tomac(intf_s1.ms_sideband),          
-        .sr_sl_tomac(intf_s1.sl_sideband),           
-        .m_rx_align_done(m_rx_align_done),   
-        
+        .sr_ms_tomac(intf_s1.ms_sideband),
+        .sr_sl_tomac(intf_s1.sl_sideband),
+        .m_rx_align_done(m_rx_align_done),
+
         // Mode Select
         .dual_mode_select(1'b0), // Slave mode
         .m_gen2_mode(1'b1),
@@ -270,7 +254,7 @@ module aib_axi_bridge_slave #(
         .i_jtag_weakpdn(1'b0),
         .i_jtag_weakpu(1'b0),
         .o_jtag_tdo(),
-        
+
         // ATPG Scan Ports
         .i_scan_clk(1'b0),
         .i_scan_clk_500m(1'b0),
@@ -287,8 +271,8 @@ module aib_axi_bridge_slave #(
         .ms_external_cntl_4_0('0),
         .ms_external_cntl_65_8('0)
     );
-  
-    
+
+
     axi_mm_slave_top  aximm_follower(
         .clk_wr              (clk_wr ),
         .rst_wr_n            (rst_wr_n),
@@ -298,7 +282,7 @@ module aib_axi_bridge_slave #(
         .init_b_credit      (init_b_credit)  ,
         .tx_phy0             (tx_phy0),
         .rx_phy0             (rx_phy0),
-        
+
         .user_arid           (user_axi_if.arid    ),
         .user_arsize         (user_axi_if.arsize  ),
         .user_arlen          (user_axi_if.arlen   ),
@@ -306,7 +290,7 @@ module aib_axi_bridge_slave #(
         .user_araddr         (user_axi_if.araddr  ),
         .user_arvalid        (user_axi_if.arvalid ),
         .user_arready        (user_axi_if.arready ),
-        
+
         .user_awid           (user_axi_if.awid   ),
         .user_awsize         (user_axi_if.awsize ),
         .user_awlen          (user_axi_if.awlen  ),
@@ -314,21 +298,21 @@ module aib_axi_bridge_slave #(
         .user_awaddr         (user_axi_if.awaddr ),
         .user_awvalid        (user_axi_if.awvalid),
         .user_awready        (user_axi_if.awready),
-        
+
         .user_wid            (user_axi_if.wid     ),
         .user_wdata          (user_axi_if.wdata   ),
         .user_wstrb          (user_axi_if.wstrb[15:0]   ),
         .user_wlast          (user_axi_if.wlast   ),
         .user_wvalid         (user_axi_if.wvalid  ),
         .user_wready         (user_axi_if.wready  ),
-        
+
         .user_rid            (user_axi_if.rid     ),
         .user_rdata          (user_axi_if.rdata   ),
         .user_rlast          (user_axi_if.rlast   ),
         .user_rresp          (user_axi_if.rresp   ),
         .user_rvalid         (user_axi_if.rvalid  ),
         .user_rready         (user_axi_if.rready  ),
-        
+
         .user_bid            (user_axi_if.bid     ),
         .user_bresp          (user_axi_if.bresp   ),
         .user_bvalid         (user_axi_if.bvalid  ),
