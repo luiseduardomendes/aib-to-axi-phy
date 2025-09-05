@@ -198,7 +198,7 @@ module tb_aib_axi_ch_top();
   aib_axi_ch_top #(
       .DWIDTH            (DWIDTH),
       .ADDRWIDTH         (ADDRWIDTH),
-      //.IDWIDTH           (IDWIDTH),
+      .IDWIDTH           (IDWIDTH),
       .GEN2_MODE         (1'b1),
       .AVMM_WIDTH        (AVMM_WIDTH),
       .BYTE_WIDTH        (BYTE_WIDTH)
