@@ -31,7 +31,7 @@ def create_build_environment(channel: str) -> None:
     elif channel == "multi":
         source_file = os.path.join(flists_dir, "aib-to-axi-phy.flist")
         project_name = "aib_project"
-        waveform_file = os.path.join(rtl_impl_dir, "axi4_aib_tools", "wave", "aib_axi_bridge_tb_behav.wcfg")
+        waveform_file = os.path.join(rtl_impl_dir, "..", "wave", "aib_axi_bridge_tb_behav.wcfg")
         top_module = "aib_axi_m2s2_top"
         tb_module = "tb_aib_axi_top_modif"
         tb_file = os.path.join(rtl_impl_dir, "..", "tb", "tb_aib_axi_top_modif.v")
