@@ -4,6 +4,6 @@
 [submodule "rtl/vendor/aib-protocols"]
 	path = rtl/vendor/aib-protocols
 	url = https://github.com/luiseduardomendes/aib-protocols.git
-[submodule "rtl/axi_aib_tools"]
-	path = rtl/axi_aib_tools
+[submodule "rtl/axi4_aib_tools"]
+	path = rtl/axi4_aib_tools
 	url = https://github.com/luiseduardomendes/axi4_aib_tools.git
