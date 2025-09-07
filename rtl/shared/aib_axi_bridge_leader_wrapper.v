@@ -146,23 +146,7 @@ module top_aib_axi_bridge_master_wrapper #(
     wire o_cfg_avmm_rdatavld_int;
     wire [AVMM_WIDTH-1:0] o_cfg_avmm_rdata_int;
     wire o_cfg_avmm_waitreq_int;
-
-    // === Tie-offs ===
-    /*
-    assign ns_adapter_rstn_int       = {NBR_CHNLS{1'b1}};
-    assign ns_mac_rdy_int            = {NBR_CHNLS{1'b0}};
-    assign sl_rx_dcc_dll_lock_req_int = {NBR_CHNLS{1'b0}};
-    assign sl_tx_dcc_dll_lock_req_int = {NBR_CHNLS{1'b0}};
-
-    assign i_cfg_avmm_addr_int       = {17{1'b0}};
-    assign i_cfg_avmm_byte_en_int    = {BYTE_WIDTH{1'b0}};
-    assign i_cfg_avmm_read_int       = 1'b0;
-    assign i_cfg_avmm_write_int      = 1'b0;
-    assign i_cfg_avmm_wdata_int      = {AVMM_WIDTH{1'b0}};
-
-    assign o_cfg_avmm_rdata_int      = {AVMM_WIDTH{1'b0}};
-    assign o_cfg_avmm_rdatavld_int   = 1'b0;
-    assign o_cfg_avmm_waitreq_int    = 1'b0;*/
+    wire calib_done;
 
     // === FSM instance (using *_int) ===
     calib_master_fsm #(
@@ -170,16 +154,16 @@ module top_aib_axi_bridge_master_wrapper #(
         .ACTIVE_CHNLS(2),
         .GEN2_MODE(1'b1)
     ) u_calib_fsm (
-        .clk(i_cfg_avmm_clk),
-        .rst_n(i_cfg_avmm_rst_n),
+        .clk   (i_cfg_avmm_clk),
+        .rst_n (i_cfg_avmm_rst_n),
         .sl_tx_transfer_en({24{1'b1}}),
         .sl_rx_transfer_en({24{1'b1}}),
-        .calib_done(),
-        .i_conf_done(ns_mac_rdy_int[0]),
-        .ns_adapter_rstn(ns_adapter_rstn_int),
-        .ns_mac_rdy(ns_mac_rdy_int),
-        .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
-        .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
+        .calib_done(calib_done),
+        .i_conf_done(),
+        .ns_adapter_rstn(),
+        .ns_mac_rdy(),
+        .ms_rx_dcc_dll_lock_req(),
+        .ms_tx_dcc_dll_lock_req(),
         .avmm_address_o(i_cfg_avmm_addr_int),
         .avmm_read_o(i_cfg_avmm_read_int),
         .avmm_write_o(i_cfg_avmm_write_int),
@@ -243,19 +227,19 @@ module top_aib_axi_bridge_master_wrapper #(
         .m_rd_clk(m_rd_clk),
         .m_fwd_clk(m_fwd_clk),
         .i_osc_clk(i_osc_clk),
-        .ns_adapter_rstn(ns_adapter_rstn_int),
+        .ns_adapter_rstn({24{calib_done}}),
         .m_por_ovrd(m_por_ovrd),
         .m_device_detect_ovrd(m_device_detect_ovrd),
         .i_m_power_on_reset(i_m_power_on_reset),
         .m_device_detect(m_device_detect),
         .o_m_power_on_reset(o_m_power_on_reset),
-        .ns_mac_rdy(ns_mac_rdy_int),
+        .ns_mac_rdy({24{calib_done}}),
         .fs_mac_rdy(fs_mac_rdy),
         .m_rx_align_done(m_rx_align_done),
         .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
         .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
-        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req_int),
-        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req_int),
+        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req),
+        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req),
         .i_cfg_avmm_clk(i_cfg_avmm_clk),
         .i_cfg_avmm_rst_n(i_cfg_avmm_rst_n),
         .i_cfg_avmm_addr(i_cfg_avmm_addr_int),

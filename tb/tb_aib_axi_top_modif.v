@@ -684,7 +684,7 @@ end
       m_axi_rdata <= '0;
       m_axi_rid <= '0;
 
-      /*
+      
       status = "Reset DUT";
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Get into Main initial", $time);
@@ -703,7 +703,7 @@ end
       $display("%0t: No dbi enabled", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");
 
-
+      /*
       // The internal signals like fifo_mode, markbit, gen1 etc.
       // need to be controlled via a configuration bus like AVMM.
       // The writes below are based on the addresses from your original code.

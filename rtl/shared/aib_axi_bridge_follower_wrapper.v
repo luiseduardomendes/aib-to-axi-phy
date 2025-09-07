@@ -138,6 +138,8 @@ module top_aib_axi_bridge_slave_wrapper #(
     wire [AVMM_WIDTH-1:0] o_cfg_avmm_rdata_int;
     wire                  o_cfg_avmm_rdatavld_int;
     wire                  o_cfg_avmm_waitreq_int;
+    wire                  i_m_power_on_reset_int;
+    wire                  calib_done;
 
 
     calib_slave_fsm #(
@@ -147,13 +149,14 @@ module top_aib_axi_bridge_slave_wrapper #(
     ) u_calib_slave_fsm (
         .clk                (i_cfg_avmm_clk),
         .rst_n              (i_cfg_avmm_rst_n),
-        .ms_tx_transfer_en  (ms_tx_transfer_en),
+        .ms_tx_transfer_en  (),
         .ms_rx_transfer_en  (),
-        .i_conf_done        (ns_mac_rdy_int[0]),
-        .ns_mac_rdy         (ns_mac_rdy_int),
-        .ns_adapter_rstn    (ns_adapter_rstn_int),
-        .sl_rx_dcc_dll_lock_req (sl_rx_dcc_dll_lock_req_int),
-        .sl_tx_dcc_dll_lock_req (sl_tx_dcc_dll_lock_req_int),
+        .i_conf_done        (),
+        .ns_mac_rdy         (),
+        .ns_adapter_rstn    (),
+        .sl_rx_dcc_dll_lock_req (),
+        .sl_tx_dcc_dll_lock_req (),
+        .calib_done        (calib_done),
         .avmm_address_o       (i_cfg_avmm_addr_int),
         .avmm_writedata_o     (i_cfg_avmm_wdata_int),
         .avmm_byteenable_o    (i_cfg_avmm_byte_en_int),
@@ -162,7 +165,7 @@ module top_aib_axi_bridge_slave_wrapper #(
         .avmm_readdata_i      (o_cfg_avmm_rdata_int),
         .avmm_readdatavalid_i (o_cfg_avmm_rdatavld_int),
         .avmm_waitrequest_i   (o_cfg_avmm_waitreq_int),
-        .i_m_power_on_reset   (i_m_power_on_reset)
+        .i_m_power_on_reset   (i_m_power_on_reset_int)
     );
 
     // Internal AXI interface
@@ -218,16 +221,16 @@ module top_aib_axi_bridge_slave_wrapper #(
         .m_wr_clk(m_wr_clk),
         .m_rd_clk(m_rd_clk),
         .m_fwd_clk(m_fwd_clk),
-        .ns_adapter_rstn(ns_adapter_rstn_int),
-        .ns_mac_rdy(ns_mac_rdy_int),
+        .ns_adapter_rstn({24{calib_done}}),
+        .ns_mac_rdy({24{calib_done}}),
         .fs_mac_rdy(fs_mac_rdy),
         .m_rx_align_done(m_rx_align_done),
         .ms_tx_transfer_en(ms_tx_transfer_en),
         .sl_tx_transfer_en(sl_tx_transfer_en),
         .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
         .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
-        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req_int),
-        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req_int),
+        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req),
+        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req),
         .m_por_ovrd(m_por_ovrd),
         .m_device_detect_ovrd(m_device_detect_ovrd),
         .i_m_power_on_reset(i_m_power_on_reset),
