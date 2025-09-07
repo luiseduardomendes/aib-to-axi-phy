@@ -684,6 +684,7 @@ end
       m_axi_rdata <= '0;
       m_axi_rid <= '0;
 
+      /*
       status = "Reset DUT";
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Get into Main initial", $time);
@@ -719,9 +720,10 @@ end
           follower_cfg_write({i_s1,11'h218}, 4'hf, 32'h6060_0000); // Corresponds to markbit settings
       end
 
+      */
       run_for_n_pkts_ms1 = 40;
       run_for_n_pkts_sl1 = 40;
-
+      /*
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Performing duts_wakeup", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");
@@ -740,6 +742,9 @@ end
       link_up ();
       status = "Starting data transmission";
 
+      */
+
+      #8000ns; // Wait some time before starting transactions
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Starting data transmission", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");

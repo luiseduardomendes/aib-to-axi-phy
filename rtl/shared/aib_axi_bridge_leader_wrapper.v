@@ -1,17 +1,6 @@
 // ============================================================================
 // Description: Verilog Wrapper for top_aib_axi_bridge_master
-//
-// Purpose:
-// This wrapper simplifies the instantiation of the 'top_aib_axi_bridge_master'
-// in a block design. It breaks out the AXI interface and connects all
-// other necessary signals for system integration.
-//
-// Usage:
-// Instantiate this wrapper in your top-level design and connect its ports
-// to the corresponding system components.
 // ============================================================================
-
-//`include "axi_if.v"
 
 module top_aib_axi_bridge_master_wrapper #(
     parameter ACTIVE_CHNLS      = 24,
@@ -24,7 +13,7 @@ module top_aib_axi_bridge_master_wrapper #(
     parameter DWIDTH            = 40,
     parameter AXI_CHNL_NUM      = 1,
     parameter ADDRWIDTH         = 32,
-    parameter IDWIDTH           = 4,  // Parameter for AXI ID Width
+    parameter IDWIDTH           = 4,  // AXI ID Width
     parameter GEN2_MODE         = 1'b1,
     parameter AVMM_WIDTH        = 32, 
     parameter BYTE_WIDTH        = 4 
@@ -84,10 +73,7 @@ module top_aib_axi_bridge_master_wrapper #(
     output                 m_device_detect,
     output                 o_m_power_on_reset,
 
-
     // Avalon MM interface
-    // input avmm_clk,
-    // input avmm_rst_n,
     input i_cfg_avmm_clk,
     input i_cfg_avmm_rst_n,
     input [16:0] i_cfg_avmm_addr,
@@ -109,8 +95,7 @@ module top_aib_axi_bridge_master_wrapper #(
     input [15:0] delay_y_value,
     input [15:0] delay_z_value,
 
-    // --- AXI Slave Interface (Individual Signals) ---
-    // Note: The DATAWIDTH parameter is ignored here; widths are fixed by axi_if.
+    // --- AXI Slave Interface ---
     input  [IDWIDTH-1:0]      s_axi_awid,
     input  [ADDRWIDTH-1:0]    s_axi_awaddr,
     input  [7:0]              s_axi_awlen,
@@ -120,8 +105,8 @@ module top_aib_axi_bridge_master_wrapper #(
     output                    s_axi_awready,
 
     input  [IDWIDTH-1:0]      s_axi_wid,
-    input  [127:0]            s_axi_wdata,  // Corrected width
-    input  [15:0]             s_axi_wstrb,  // Corrected width
+    input  [127:0]            s_axi_wdata,
+    input  [15:0]             s_axi_wstrb,
     input                     s_axi_wlast,
     input                     s_axi_wvalid,
     output                    s_axi_wready,
@@ -140,20 +125,76 @@ module top_aib_axi_bridge_master_wrapper #(
     output                    s_axi_arready,
 
     output [IDWIDTH-1:0]      s_axi_rid,
-    output [127:0]            s_axi_rdata,  // Corrected width
+    output [127:0]            s_axi_rdata,
     output [1:0]              s_axi_rresp,
     output                    s_axi_rlast,
     output                    s_axi_rvalid,
     input                     s_axi_rready
 );
 
-    // Internal AXI Interface for connecting to the core module
-    // The widths inside this interface are defined by your axi_if.v file
+    // === Internal tie-off wires ===
+    wire [NBR_CHNLS-1:0] ns_adapter_rstn_int;
+    wire [NBR_CHNLS-1:0] ns_mac_rdy_int;
+    wire [NBR_CHNLS-1:0] sl_rx_dcc_dll_lock_req_int;
+    wire [NBR_CHNLS-1:0] sl_tx_dcc_dll_lock_req_int;
+
+    wire [16:0] i_cfg_avmm_addr_int;
+    wire [BYTE_WIDTH-1:0] i_cfg_avmm_byte_en_int;
+    wire i_cfg_avmm_read_int;
+    wire i_cfg_avmm_write_int;
+    wire [AVMM_WIDTH-1:0] i_cfg_avmm_wdata_int;
+    wire o_cfg_avmm_rdatavld_int;
+    wire [AVMM_WIDTH-1:0] o_cfg_avmm_rdata_int;
+    wire o_cfg_avmm_waitreq_int;
+
+    // === Tie-offs ===
+    /*
+    assign ns_adapter_rstn_int       = {NBR_CHNLS{1'b1}};
+    assign ns_mac_rdy_int            = {NBR_CHNLS{1'b0}};
+    assign sl_rx_dcc_dll_lock_req_int = {NBR_CHNLS{1'b0}};
+    assign sl_tx_dcc_dll_lock_req_int = {NBR_CHNLS{1'b0}};
+
+    assign i_cfg_avmm_addr_int       = {17{1'b0}};
+    assign i_cfg_avmm_byte_en_int    = {BYTE_WIDTH{1'b0}};
+    assign i_cfg_avmm_read_int       = 1'b0;
+    assign i_cfg_avmm_write_int      = 1'b0;
+    assign i_cfg_avmm_wdata_int      = {AVMM_WIDTH{1'b0}};
+
+    assign o_cfg_avmm_rdata_int      = {AVMM_WIDTH{1'b0}};
+    assign o_cfg_avmm_rdatavld_int   = 1'b0;
+    assign o_cfg_avmm_waitreq_int    = 1'b0;*/
+
+    // === FSM instance (using *_int) ===
+    calib_master_fsm #(
+        .TOTAL_CHNL_NUM(NBR_CHNLS),
+        .ACTIVE_CHNLS(2),
+        .GEN2_MODE(1'b1)
+    ) u_calib_fsm (
+        .clk(i_cfg_avmm_clk),
+        .rst_n(i_cfg_avmm_rst_n),
+        .sl_tx_transfer_en({24{1'b1}}),
+        .sl_rx_transfer_en({24{1'b1}}),
+        .calib_done(),
+        .i_conf_done(ns_mac_rdy_int[0]),
+        .ns_adapter_rstn(ns_adapter_rstn_int),
+        .ns_mac_rdy(ns_mac_rdy_int),
+        .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
+        .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
+        .avmm_address_o(i_cfg_avmm_addr_int),
+        .avmm_read_o(i_cfg_avmm_read_int),
+        .avmm_write_o(i_cfg_avmm_write_int),
+        .avmm_writedata_o(i_cfg_avmm_wdata_int),
+        .avmm_byteenable_o(i_cfg_avmm_byte_en_int),
+        .avmm_readdata_i(o_cfg_avmm_rdata_int),
+        .avmm_readdatavalid_i(o_cfg_avmm_rdatavld_int),
+        .avmm_waitrequest_i(o_cfg_avmm_waitreq_int)
+    );
+
+    // Internal AXI Interface
     axi_if user_axi_if ();
 
-    // Instantiate the core AIB to AXI bridge master module
+    // === Core Instance (using *_int) ===
     aib_axi_bridge_master #(
-        .ACTIVE_CHNLS(ACTIVE_CHNLS),
         .NBR_CHNLS(NBR_CHNLS),
         .NBR_BUMPS(NBR_BUMPS),
         .NBR_PHASES(NBR_PHASES),
@@ -202,31 +243,29 @@ module top_aib_axi_bridge_master_wrapper #(
         .m_rd_clk(m_rd_clk),
         .m_fwd_clk(m_fwd_clk),
         .i_osc_clk(i_osc_clk),
-        .ns_adapter_rstn(ns_adapter_rstn),
+        .ns_adapter_rstn(ns_adapter_rstn_int),
         .m_por_ovrd(m_por_ovrd),
         .m_device_detect_ovrd(m_device_detect_ovrd),
         .i_m_power_on_reset(i_m_power_on_reset),
         .m_device_detect(m_device_detect),
         .o_m_power_on_reset(o_m_power_on_reset),
-        .ns_mac_rdy(ns_mac_rdy),
+        .ns_mac_rdy(ns_mac_rdy_int),
         .fs_mac_rdy(fs_mac_rdy),
         .m_rx_align_done(m_rx_align_done),
-        //.avmm_clk(avmm_clk),
-        //.avmm_rst_n(avmm_rst_n),
         .ms_rx_dcc_dll_lock_req(ms_rx_dcc_dll_lock_req),
         .ms_tx_dcc_dll_lock_req(ms_tx_dcc_dll_lock_req),
-        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req),
-        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req),
+        .sl_rx_dcc_dll_lock_req(sl_rx_dcc_dll_lock_req_int),
+        .sl_tx_dcc_dll_lock_req(sl_tx_dcc_dll_lock_req_int),
         .i_cfg_avmm_clk(i_cfg_avmm_clk),
         .i_cfg_avmm_rst_n(i_cfg_avmm_rst_n),
-        .i_cfg_avmm_addr(i_cfg_avmm_addr),
-        .i_cfg_avmm_byte_en(i_cfg_avmm_byte_en),
-        .i_cfg_avmm_read(i_cfg_avmm_read),
-        .i_cfg_avmm_write(i_cfg_avmm_write),
-        .i_cfg_avmm_wdata(i_cfg_avmm_wdata),
-        .o_cfg_avmm_rdatavld(o_cfg_avmm_rdatavld),
-        .o_cfg_avmm_rdata(o_cfg_avmm_rdata),
-        .o_cfg_avmm_waitreq(o_cfg_avmm_waitreq),
+        .i_cfg_avmm_addr(i_cfg_avmm_addr_int),
+        .i_cfg_avmm_byte_en(i_cfg_avmm_byte_en_int),
+        .i_cfg_avmm_read(i_cfg_avmm_read_int),
+        .i_cfg_avmm_write(i_cfg_avmm_write_int),
+        .i_cfg_avmm_wdata(i_cfg_avmm_wdata_int),
+        .o_cfg_avmm_rdatavld(o_cfg_avmm_rdatavld_int),
+        .o_cfg_avmm_rdata(o_cfg_avmm_rdata_int),
+        .o_cfg_avmm_waitreq(o_cfg_avmm_waitreq_int),
         .clk_wr(clk_wr),
         .rst_wr_n(rst_wr_n),
         .init_aw_credit(init_aw_credit),
@@ -235,10 +274,10 @@ module top_aib_axi_bridge_master_wrapper #(
         .delay_x_value(delay_x_value),
         .delay_y_value(delay_y_value),
         .delay_z_value(delay_z_value),
-        .user_axi_if(user_axi_if.slave) // Connect to the slave modport
+        .user_axi_if(user_axi_if.slave)
     );
 
-    // Connect the wrapper's individual AXI slave ports to the internal AXI interface.
+    // === AXI port mapping ===
     assign user_axi_if.awid    = s_axi_awid;
     assign user_axi_if.awaddr  = s_axi_awaddr;
     assign user_axi_if.awlen   = s_axi_awlen;
