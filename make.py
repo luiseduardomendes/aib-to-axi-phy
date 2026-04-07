@@ -1,3 +1,6 @@
+# File: make.py
+# Author: Luis E. Mendes <lepmendes@inf.ufrgs.br>
+
 import sys
 import os
 import subprocess
