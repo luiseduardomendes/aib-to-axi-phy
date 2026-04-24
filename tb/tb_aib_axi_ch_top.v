@@ -3,7 +3,7 @@
 supply1 HI;
 supply0 LO;
 
-module tb_aib_axi_top_modif();
+module tb_aib_axi_ch_top();
 
   // ========================================================================
   // Parameters
@@ -15,9 +15,6 @@ module tb_aib_axi_top_modif();
   parameter OSC_CYCLE         = 1 * CLK_SCALING;
   parameter AVMM_CYCLE        = 4;
 
-  parameter ACTIVE_CHNLS      = 24;
-  parameter NBR_CHNLS         = 24;
-  parameter TOTAL_CHNL_NUM    = NBR_CHNLS;
   parameter DWIDTH            = 40;
   parameter ADDRWIDTH         = 32;
   parameter IDWIDTH           = 4;
@@ -36,7 +33,7 @@ module tb_aib_axi_top_modif();
   reg leader_i_osc_clk;
   // reg leader_avmm_clk;
   reg leader_i_cfg_avmm_clk;
-  reg [NBR_CHNLS-1:0] leader_ns_adapter_rstn;
+  reg leader_ns_adapter_rstn;
   // reg leader_avmm_rst_n;
   reg leader_i_cfg_avmm_rst_n;
   reg leader_clk_wr;
@@ -47,21 +44,21 @@ module tb_aib_axi_top_modif();
   reg  follower_m_fwd_clk;
   // reg follower_avmm_clk;
   reg follower_i_cfg_avmm_clk;
-  reg [NBR_CHNLS-1:0] follower_ns_adapter_rstn;
+  reg follower_ns_adapter_rstn;
   // reg follower_avmm_rst_n;
   reg follower_i_cfg_avmm_rst_n;
   reg follower_clk_wr;
   reg follower_rst_wr_n;
 
   // --- DUT Interface Signals ---
-  reg  [NBR_CHNLS-1: 0] leader_ns_mac_rdy;
-  wire [NBR_CHNLS-1: 0] leader_fs_mac_rdy;
-  wire [NBR_CHNLS-1: 0] leader_m_rx_align_done;
+  reg  leader_ns_mac_rdy;
+  wire leader_fs_mac_rdy;
+  wire leader_m_rx_align_done;
   // Leader DCC/DLL Lock Requests
-  reg  [NBR_CHNLS-1: 0] leader_ms_rx_dcc_dll_lock_req;
-  reg  [NBR_CHNLS-1: 0] leader_ms_tx_dcc_dll_lock_req;
-  reg  [NBR_CHNLS-1: 0] leader_sl_rx_dcc_dll_lock_req;
-  reg  [NBR_CHNLS-1: 0] leader_sl_tx_dcc_dll_lock_req;
+  reg  leader_ms_rx_dcc_dll_lock_req;
+  reg  leader_ms_tx_dcc_dll_lock_req;
+  reg  leader_sl_rx_dcc_dll_lock_req;
+  reg  leader_sl_tx_dcc_dll_lock_req;
   
   reg                   leader_m_por_ovrd;
   reg                   leader_m_device_detect_ovrd;
@@ -112,16 +109,16 @@ module tb_aib_axi_top_modif();
   reg                    s_axi_rready;
 
   // Follower signals
-  reg  [NBR_CHNLS-1: 0] follower_ns_mac_rdy;
-  wire [NBR_CHNLS-1: 0] follower_fs_mac_rdy;
-  wire [NBR_CHNLS-1: 0] follower_m_rx_align_done;
-  wire [NBR_CHNLS-1: 0] follower_ms_tx_transfer_en;
-  wire [NBR_CHNLS-1: 0] follower_sl_tx_transfer_en;
+  reg  follower_ns_mac_rdy;
+  wire follower_fs_mac_rdy;
+  wire follower_m_rx_align_done;
+  wire follower_ms_tx_transfer_en;
+  wire follower_sl_tx_transfer_en;
   // Follower DCC/DLL Lock Requests
-  reg  [NBR_CHNLS-1: 0] follower_ms_rx_dcc_dll_lock_req;
-  reg  [NBR_CHNLS-1: 0] follower_ms_tx_dcc_dll_lock_req;
-  reg  [NBR_CHNLS-1: 0] follower_sl_rx_dcc_dll_lock_req;
-  reg  [NBR_CHNLS-1: 0] follower_sl_tx_dcc_dll_lock_req;
+  reg  follower_ms_rx_dcc_dll_lock_req;
+  reg  follower_ms_tx_dcc_dll_lock_req;
+  reg  follower_sl_rx_dcc_dll_lock_req;
+  reg  follower_sl_tx_dcc_dll_lock_req;
 
   reg                   follower_m_por_ovrd;
   reg                   follower_m_device_detect_ovrd;
@@ -198,9 +195,7 @@ module tb_aib_axi_top_modif();
   // ========================================================================
   // DUT Instantiation
   // ========================================================================
-  aib_axi_top_wrapper #(
-      .ACTIVE_CHNLS      (ACTIVE_CHNLS),
-      .NBR_CHNLS         (NBR_CHNLS),
+  aib_axi_ch_top #(
       .DWIDTH            (DWIDTH),
       .ADDRWIDTH         (ADDRWIDTH),
       .IDWIDTH           (IDWIDTH),
@@ -422,20 +417,20 @@ module tb_aib_axi_top_modif();
          follower_ns_mac_rdy      = '0;
          follower_ns_adapter_rstn = '0;
          follower_rst_wr_n        = 1'b0;
-         follower_ms_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
-         follower_ms_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
-         follower_sl_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
-         follower_sl_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         follower_ms_rx_dcc_dll_lock_req = 1'b0;
+         follower_ms_tx_dcc_dll_lock_req = 1'b0;
+         follower_sl_rx_dcc_dll_lock_req = 1'b0;
+         follower_sl_tx_dcc_dll_lock_req = 1'b0;
          
 
          // intf_m1.i_conf_done = 1'b0;
          leader_ns_mac_rdy      = '0;
          leader_ns_adapter_rstn = '0;
          leader_rst_wr_n        = 1'b0;
-         leader_ms_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
-         leader_ms_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
-         leader_sl_rx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
-         leader_sl_tx_dcc_dll_lock_req = {NBR_CHNLS{1'b0}};
+         leader_ms_rx_dcc_dll_lock_req = 1'b0;
+         leader_ms_tx_dcc_dll_lock_req = 1'b0;
+         leader_sl_rx_dcc_dll_lock_req = 1'b0;
+         leader_sl_tx_dcc_dll_lock_req = 1'b0;
 
          leader_m_por_ovrd = '0;
          leader_m_device_detect_ovrd = '0;
@@ -524,21 +519,21 @@ module tb_aib_axi_top_modif();
     end
     
     follower_i_cfg_avmm_write <= 1'b0;
-    follower_i_cfg_avmm_addr <= 'x;
-    follower_i_cfg_avmm_byte_en <= 'x;
-    follower_i_cfg_avmm_wdata <= 'x;
+    follower_i_cfg_avmm_addr <= '0;
+    follower_i_cfg_avmm_byte_en <= '0;
+    follower_i_cfg_avmm_wdata <= '0;
   end
   endtask
 
     // --- DUT Wakeup Task ---
     task duts_wakeup ();
     begin
-        leader_ns_mac_rdy = {TOTAL_CHNL_NUM{1'b1}}; 
-        follower_ns_mac_rdy = {TOTAL_CHNL_NUM{1'b1}}; 
+        leader_ns_mac_rdy = 1'b1; 
+        follower_ns_mac_rdy = 1'b1; 
 
         #1000ns;
-        leader_ns_adapter_rstn = {TOTAL_CHNL_NUM{1'b1}};
-        follower_ns_adapter_rstn = {TOTAL_CHNL_NUM{1'b1}};
+        leader_ns_adapter_rstn = 1'b1;
+        follower_ns_adapter_rstn = 1'b1;
 
         #1000ns;
     end
@@ -548,8 +543,8 @@ module tb_aib_axi_top_modif();
   task link_up;
   begin
     fork
-        wait (leader_fs_mac_rdy == {TOTAL_CHNL_NUM{1'b1}});
-        wait (follower_fs_mac_rdy == {TOTAL_CHNL_NUM{1'b1}});
+        wait (leader_fs_mac_rdy == 1'b1);
+        wait (follower_fs_mac_rdy == 1'b1);
     join;
   end
   endtask
@@ -567,6 +562,7 @@ module tb_aib_axi_top_modif();
       s_axi_awsize  <= 3'b100; // 16 bytes (128 bits)
       s_axi_awburst <= 2'b01;  // INCR
       s_axi_awvalid <= 1'b1;
+      s_axi_bready <= 1'b0;
 
       wait (s_axi_awready);
       @(posedge leader_clk_wr);
@@ -582,7 +578,7 @@ module tb_aib_axi_top_modif();
       wait (s_axi_wready);
       @(posedge leader_clk_wr);
       s_axi_wvalid <= 1'b0;
-
+      s_axi_bready <= 1'b1;
       // Write Response
       wait (s_axi_bvalid);
       @(posedge leader_clk_wr);
@@ -684,7 +680,6 @@ end
       m_axi_rdata <= '0;
       m_axi_rid <= '0;
 
-      
       status = "Reset DUT";
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Get into Main initial", $time);
@@ -696,34 +691,30 @@ end
 
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("\n//                                                                       ///");
-      $display("%0t: AIB : set to 2xFIFO mode for ms -> sl and sl -> ms 24 channel testing", $time);
-      $display("%0t: AIB : Master is 2.0 AIB model in Gen1 mode", $time);
-      $display("%0t: AIB : Slave is 1.0 FPGA", $time);
+      $display("%0t: AIB : set to 2xFIFO mode for ms -> sl single channel testing", $time);
+      $display("%0t: AIB : Master is 2.0 AIB model in Gen2 mode", $time);
+      $display("%0t: AIB : Slave is 2.0 AIB model in Gen2 mode", $time);
       $display("\n//                                                                       ///");
       $display("%0t: No dbi enabled", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");
 
-      /*
+
       // The internal signals like fifo_mode, markbit, gen1 etc.
       // need to be controlled via a configuration bus like AVMM.
       // The writes below are based on the addresses from your original code.
       // These will now go through the wrapper's AVMM interface.
-      for (i_m1=0; i_m1<ACTIVE_CHNLS; i_m1++) begin
-          cfg_write({i_m1,11'h208}, 4'hf, 32'h0600_0000); // Corresponds to fifo_mode settings
-          cfg_write({i_m1,11'h210}, 4'hf, 32'h0000_0006); // Corresponds to gen1 settings
-          cfg_write({i_m1,11'h218}, 4'hf, 32'h6060_0000); // Corresponds to markbit settings
-      end
+      
+      cfg_write({5'b0,11'h208}, 4'hf, 32'h0600_0000); // Corresponds to fifo_mode settings
+      cfg_write({5'b0,11'h210}, 4'hf, 32'h0000_0016); // Corresponds to gen2 settings
+      cfg_write({5'b0,11'h218}, 4'hf, 32'h6062_0000); // Corresponds to markbit settings
+      
+      follower_cfg_write({5'b0,11'h208}, 4'hf, 32'h0600_0000); // Corresponds to fifo_mode settings
+      follower_cfg_write({5'b0,11'h210}, 4'hf, 32'h0000_0016); // Corresponds to gen2 settings
+      follower_cfg_write({5'b0,11'h218}, 4'hf, 32'h6062_0000); // Corresponds to markbit settings   
 
-      for (i_s1=0; i_s1<ACTIVE_CHNLS; i_s1++) begin
-          follower_cfg_write({i_s1,11'h208}, 4'hf, 32'h0600_0000); // Corresponds to fifo_mode settings
-          follower_cfg_write({i_s1,11'h210}, 4'hf, 32'h0000_0006); // Corresponds to gen1 settings
-          follower_cfg_write({i_s1,11'h218}, 4'hf, 32'h6060_0000); // Corresponds to markbit settings
-      end
-
-      */
       run_for_n_pkts_ms1 = 40;
       run_for_n_pkts_sl1 = 40;
-      /*
+
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Performing duts_wakeup", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");
@@ -742,9 +733,6 @@ end
       link_up ();
       status = "Starting data transmission";
 
-      */
-
-      #8000ns; // Wait some time before starting transactions
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Starting data transmission", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");

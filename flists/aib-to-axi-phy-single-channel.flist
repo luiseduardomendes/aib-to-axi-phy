@@ -7,6 +7,10 @@ ${IMPL_RTL_DIR}/shared/aib_axi_bridge_leader_wrapper.v
 ${IMPL_RTL_DIR}/shared/aib_axi_wrapper.v 
 ${IMPL_RTL_DIR}/shared/emib_wrapper.v
 
+${IMPL_RTL_DIR}/shared/aib_axi_top_ch.sv 
+${IMPL_RTL_DIR}/shared/aib_axi_leader_ch.sv 
+${IMPL_RTL_DIR}/shared/aib_axi_follower_ch.sv
+
 ${IMPL_RTL_DIR}/shared/aib_axi_bridge_follower.sv 
 ${IMPL_RTL_DIR}/shared/aib_axi_bridge_leader.sv
 

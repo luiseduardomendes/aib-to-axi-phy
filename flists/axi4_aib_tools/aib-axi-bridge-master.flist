@@ -10,5 +10,5 @@ ${IMPL_RTL_DIR}/vendor/aib-phy-hardware/v2.0/rev1/dv/interface/avalon_mm_if.sv
 ${IMPL_RTL_DIR}/axi4_aib_tools/rtl/axi_aib_bridges/aib_axi_bridge_master.v 
 ${IMPL_RTL_DIR}/axi4_aib_tools/rtl/interfaces/axi_if.v
 
-${IMPL_RTL_DIR}/shared/aib_axi_bridge_master_wrapper.v
+// ${IMPL_RTL_DIR}/shared/aib_axi_bridge_master_wrapper.v
 
