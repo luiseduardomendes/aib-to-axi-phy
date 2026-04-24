@@ -42,7 +42,7 @@ create_project -force $project_name ./$project_name
 ############################################
 # Load Source Files, Include Directories, Defines and Constraints
 ############################################
-add_files  {*}$source_files
+add_files  $source_files
 add_files -fileset sim_1 $tb_file
 # add_files -fileset constrs_1 $constrains_file
 set_property file_type SystemVerilog [get_files *.v]

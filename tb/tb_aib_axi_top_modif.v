@@ -52,6 +52,8 @@ module tb_aib_axi_top_modif();
   reg follower_i_cfg_avmm_rst_n;
   reg follower_clk_wr;
   reg follower_rst_wr_n;
+  
+  reg waiting_for_bvalid;
 
   // --- DUT Interface Signals ---
   reg  [NBR_CHNLS-1: 0] leader_ns_mac_rdy;
@@ -582,7 +584,6 @@ module tb_aib_axi_top_modif();
       wait (s_axi_wready);
       @(posedge leader_clk_wr);
       s_axi_wvalid <= 1'b0;
-
       // Write Response
       wait (s_axi_bvalid);
       @(posedge leader_clk_wr);
@@ -592,8 +593,70 @@ module tb_aib_axi_top_modif();
       s_axi_bready <= 1'b0;
 
       $display("%0t: AIB : Finished single-beat AXI write transaction.", $time);
+      
+      
   end
   endtask
+
+  integer issued_transactions;
+  integer received_transactions;
+
+  task automatic axi_issue_write(
+    input  [3:0]   awid,
+    input  [31:0]  awaddr,
+    input  [63:0]  wdata
+  );
+  begin
+      $display("%0t: AIB : Issuing AXI write transaction. AWID=%0h, ADDR=%0h, WDATA=%0h", 
+              $time, awid, awaddr, wdata);
+
+      // Address Write
+      @(posedge leader_clk_wr);
+      s_axi_awid    <= awid;
+      s_axi_awaddr  <= awaddr;
+      s_axi_awlen   <= 8'd0;     // Single beat
+      s_axi_awsize  <= 3'b011;   // 8 bytes (since wdata is 64b)
+      s_axi_awburst <= 2'b01;    // INCR
+      s_axi_awvalid <= 1'b1;
+
+      wait (s_axi_awready);
+      @(posedge leader_clk_wr);
+      waiting_for_bvalid <= 1'b1;
+      issued_transactions = issued_transactions + 1;
+      s_axi_awvalid <= 1'b0;
+
+      // Write Data (Single Beat)
+      //@(posedge leader_clk_wr);
+      s_axi_wid    <= awid;
+      s_axi_wdata  <= wdata;
+      s_axi_wstrb  <= 8'hFF;     // 8-byte write
+      s_axi_wlast  <= 1'b1;
+      s_axi_wvalid <= 1'b1;
+
+      wait (s_axi_wready);
+      @(posedge leader_clk_wr);
+      s_axi_wvalid <= 1'b0;
+
+  end
+  endtask
+
+  task automatic axi_receive_write_responses();
+  begin
+      forever begin
+          wait (waiting_for_bvalid);
+          wait (s_axi_bvalid);
+          @(posedge leader_clk_wr);
+          s_axi_bready <= 1'b1;
+          $display("%0t: AIB : Write response: BRESP=%0h, BID=%0h", 
+                    $time, s_axi_bresp, s_axi_bid);
+          waiting_for_bvalid <= 1'b0;
+          @(posedge leader_clk_wr);
+          s_axi_bready <= 1'b0;
+      end
+  end
+  endtask
+
+
 
   // --- AXI Write Receive Task (Follower/Slave Side) ---
   // Versão melhorada da tarefa do AXI Follower
@@ -606,7 +669,7 @@ task axi_slave_receive_write;
     // Inicializa os sinais para o estado padrão
     m_axi_awready <= 1'b1;
     m_axi_wready  <= 1'b1;
-    m_axi_bvalid  <= 1'b1;
+    m_axi_bvalid  <= 1'b0;
 
     // Loop principal para sempre aguardar por novas transações
     forever begin
@@ -644,6 +707,7 @@ task axi_slave_receive_write;
       @(posedge follower_clk_wr);
       m_axi_bvalid <= 1'b0;
       $display("[%0t] Follower: Transação de escrita concluída.", $time);
+      
     end
   end
 endtask
@@ -658,19 +722,36 @@ endtask
   end
   endtask
 
+  task automatic axi_issue_n_writes(
+    input int n,                 // number of transactions
+    input [31:0] start_addr,     // base address
+    input [63:0] base_data       // base data pattern
+  );
+      int i;
+      for (i = 0; i < n; i++) begin
+          axi_issue_write(i[3:0], start_addr + (i * 8), base_data ^ i);
+      end
+  endtask
+
+
 
   initial begin
     fork
         axi_slave_receive_write();
-    join_none
-end
+        axi_receive_write_responses();
+    join
+  end
 
+  integer start_time;
 
   // ========================================================================
   // Main Test Sequence
   // ========================================================================
   initial begin
     begin
+
+      issued_transactions = 0;
+      received_transactions = 0;
 
       m_axi_awready <= 1'b1;
       m_axi_arready <= 1'b1;
@@ -721,7 +802,7 @@ end
       end
 
       */
-      run_for_n_pkts_ms1 = 40;
+      run_for_n_pkts_ms1 = 4;
       run_for_n_pkts_sl1 = 40;
       /*
       $display("\n////////////////////////////////////////////////////////////////////////////");
@@ -744,7 +825,7 @@ end
 
       */
 
-      #8000ns; // Wait some time before starting transactions
+      #3000ns; // Wait some time before starting transactions
       $display("\n////////////////////////////////////////////////////////////////////////////");
       $display("%0t: AIB : Starting data transmission", $time);
       $display("////////////////////////////////////////////////////////////////////////////\n");
@@ -753,17 +834,29 @@ end
       fork
           begin
               // Master (Leader) sending data to Slave (Follower)
-              repeat(run_for_n_pkts_ms1) begin
-                  axi_write_transaction();
+              start_time = $time;
+              axi_issue_n_writes(run_for_n_pkts_ms1, 32'h1000, 64'h1000);
+              /*repeat(run_for_n_pkts_ms1) begin
+                  //axi_write_transaction();
                   //ms1_aib2_reg2reg_xmit();
                   //sl1_aib2_regmod_rcv(); 
-              end
+              end*/
           end
           // You could have another begin/end block here to model the follower sending data
       join
 
       status = "Finishing data transmission";
       $display("%0t: AIB : Data transmission finished.", $time);
+      
+      $display("Waiting for follower to receive all data");
+
+      wait (received_transactions == run_for_n_pkts_ms1);
+
+      $display("All data received successfully!!");
+      $display("Start Time: %0t", start_time);
+      $display("Final Time: %0t", $time);
+
+      $display("Clock Cycles: %0d", ($time - start_time)/WR_CYCLE); 
       
       repeat(100) @(posedge leader_m_wr_clk);
       $finish;
@@ -781,6 +874,8 @@ end
   always @(posedge follower_clk_wr) begin
       if (m_axi_wvalid && m_axi_wready) begin
           $display("%0t: Follower: Received WDATA=0x%h, WSTRB=0x%h, WLAST=%b", $time, m_axi_wdata, m_axi_wstrb, m_axi_wlast);
+          received_transactions = received_transactions + 1;
+          $display("Received Transactions so far: %0d", received_transactions);
       end
   end
 
